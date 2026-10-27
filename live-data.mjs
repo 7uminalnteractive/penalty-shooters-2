@@ -1,0 +1,21 @@
+import {createCareer,club,news} from './career-core.mjs';
+export async function fetchJSON(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),18000);try{const r=await fetch(url,{signal:controller.signal,cache:'no-store'});if(!r.ok)throw Error(`Fonte indisponível (${r.status}).`);return await r.json();}finally{clearTimeout(timer);}}
+export async function startLive(clubs,options,onProgress=()=>{}){
+ if(!navigator.onLine)throw Error('Conecte-se à internet para iniciar uma carreira ao vivo.');
+ const year=new Date().getFullYear();onProgress('Consultando calendário e classificação…');
+ const [games,table]=await Promise.all([fetchJSON(`https://site.api.espn.com/apis/site/v2/sports/soccer/bra.1/scoreboard?dates=${year}&limit=1000`),fetchJSON(`https://site.web.api.espn.com/apis/v2/sports/soccer/bra.1/standings?season=${year}`)]);
+ const ids=new Map(clubs.map(t=>[t.espnId,t.id]));let entries=[];function walk(x){if(!x||typeof x!=='object')return;if(x.standings?.entries)entries.push(...x.standings.entries);if(x.children)x.children.forEach(walk);}walk(table);
+ entries=[...new Map(entries.map(e=>[e.team.id,e])).values()].filter(e=>ids.has(e.team.id));if(entries.length!==20)throw Error('A fonte não entregou a classificação completa. Tente novamente mais tarde.');
+ const stat=(e,n)=>Number(e.stats.find(x=>x.name===n)?.value||0);
+ let fixtures=(games.events||[]).flatMap(event=>{let c=event.competitions?.[0],h=c?.competitors?.find(t=>t.homeAway==='home'),a=c?.competitors?.find(t=>t.homeAway==='away');if(!h||!a||!ids.has(h.id)||!ids.has(a.id))return[];let done=event.status?.type?.completed;return[{id:'LIVE-'+event.id,comp:'league',round:Number(event.week?.number||0),date:event.date.slice(0,10),kickoff:event.date,home:ids.get(h.id),away:ids.get(a.id),result:done?[Number(h.score),Number(a.score)]:null,historical:!!done,source:'ESPN'}];});
+ // Rescheduled events may appear under a second ID: one league home/away pairing per season.
+ fixtures=[...new Map(fixtures.sort((a,b)=>Number(!!a.result)-Number(!!b.result)||a.date.localeCompare(b.date)).map(f=>[`${f.home}-${f.away}`,f])).values()];
+ const now=Date.now(),last=fixtures.filter(f=>f.historical).map(f=>new Date(f.kickoff).getTime());if(!last.length||now-Math.max(...last)>21*86400000)throw Error('Os resultados recebidos estão desatualizados para começar ao vivo.');
+ // A game in progress has no stable starting point; do not silently simulate it as finished.
+ if((games.events||[]).some(e=>e.status?.type?.state==='in'&&e.competitions?.[0]?.competitors?.some(t=>ids.get(t.id)===options.team)))throw Error('Seu clube está jogando agora. Aguarde o encerramento para importar o cenário.');
+ if(!fixtures.some(f=>!f.result&&(f.home===options.team||f.away===options.team)&&new Date(f.kickoff).getTime()>now))throw Error('A fonte não trouxe os próximos jogos do clube.');
+ const unscheduled=fixtures.filter(f=>!f.result&&new Date(f.kickoff).getTime()<now-86400000);fixtures=fixtures.filter(f=>!unscheduled.includes(f));
+ onProgress('Atualizando os elencos…');
+ const refreshed=await Promise.all(clubs.map(async t=>{const j=await fetchJSON(`https://site.api.espn.com/apis/site/v2/sports/soccer/bra.1/teams/${t.espnId}/roster`);let athletes=j.athletes||[];if(athletes[0]?.items)athletes=athletes.flatMap(g=>g.items);if(athletes.length<11)throw Error(`Elenco incompleto: ${t.name}.`);return {...t,players:athletes.map(a=>({id:String(a.id),name:a.displayName||a.fullName,number:String(a.jersey||''),position:a.position?.abbreviation||'',value:5+Number(a.id)%21}))};}));
+ const s=createCareer(refreshed,{...options,season:year,mode:'live'});s.date=new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});s.fixtures=fixtures;s.baseline=entries.map(e=>({id:ids.get(e.team.id),p:stat(e,'points'),j:stat(e,'gamesPlayed'),v:stat(e,'wins'),e:stat(e,'ties'),d:stat(e,'losses'),gf:stat(e,'pointsFor'),ga:stat(e,'pointsAgainst'),form:[]}));s.live={fetchedAt:new Date().toISOString(),source:'ESPN',scope:'Brasileirão Série A',snapshotDate:s.date,unscheduled};s.news=[];news(s,'Você assume daqui',`Cenário real importado em ${s.date}. A partir de agora, os resultados pertencem à sua carreira.`);return s;
+}

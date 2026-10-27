@@ -1,0 +1,621 @@
+{
+  "base": "penalty-shooters-2-main.zip",
+  "instrucoes": "Extrair na raiz do projeto original, mantendo os arquivos originais que não estão neste pacote.",
+  "arquivos": [
+    {
+      "arquivo": "README-ATUALIZACAO.md",
+      "estado": "novo",
+      "sha256": "d7a0bffca4dc0046312d7f4dc803f7dd7b80d242a53f9d1d116d5814a38ffada"
+    },
+    {
+      "arquivo": "assets/crests/0.png",
+      "estado": "novo",
+      "sha256": "ef20f396606f8c0a6a5f30dd4fddc8ed899aa64326e11da216ef9b2674c7bfb3"
+    },
+    {
+      "arquivo": "assets/crests/1.png",
+      "estado": "novo",
+      "sha256": "0b46ca645c16977ebd4da7b9c7b411b1cf125d369b9ffbc651b1ed1f6ab2928e"
+    },
+    {
+      "arquivo": "assets/crests/10.png",
+      "estado": "novo",
+      "sha256": "8320c75dd2d17c07603e0f417008da5065be24b93e22dddc475dc540cc137e53"
+    },
+    {
+      "arquivo": "assets/crests/11.png",
+      "estado": "novo",
+      "sha256": "e4e9257c2b559f5e10e507e52221cd2b31e12a07cd46b8ba4b8e696342b78d2c"
+    },
+    {
+      "arquivo": "assets/crests/12.png",
+      "estado": "novo",
+      "sha256": "83ea69b941b800c4f32774798e1194ed3b1025acb935e0deade5d4416d59b1a2"
+    },
+    {
+      "arquivo": "assets/crests/13.png",
+      "estado": "novo",
+      "sha256": "043b229f28f9781c2e9cd5be9fbf76b6318c200d114c8def457eee05d8dd61be"
+    },
+    {
+      "arquivo": "assets/crests/14.png",
+      "estado": "novo",
+      "sha256": "7b257bc9a11e9fc9af90062577a96dbb54bda7009d9d73b02a27cdcff124344a"
+    },
+    {
+      "arquivo": "assets/crests/15.png",
+      "estado": "novo",
+      "sha256": "388c6be03414040caea3a0a2ae86d303cd070e2164ebe3028059e14c776c8caf"
+    },
+    {
+      "arquivo": "assets/crests/16.png",
+      "estado": "novo",
+      "sha256": "d6c5b41dfe8b3ab348ba85b265767c54d0618a7ed522b401da50874e92b6f2a8"
+    },
+    {
+      "arquivo": "assets/crests/17.png",
+      "estado": "novo",
+      "sha256": "6524cadabce3d5ce640d96ffa3cdc5906e13999e8abd722a684d588277e5c59d"
+    },
+    {
+      "arquivo": "assets/crests/18.png",
+      "estado": "novo",
+      "sha256": "21fd57c4580b5305966584a2ecd196cba36abbaf19c7c440f53030bc94ddeab9"
+    },
+    {
+      "arquivo": "assets/crests/19.png",
+      "estado": "novo",
+      "sha256": "2b10588b38d37a2afe1db516b37e3a417da39fcad142ade02f65456cc389d70e"
+    },
+    {
+      "arquivo": "assets/crests/2.png",
+      "estado": "novo",
+      "sha256": "f8df1d11ce813c3fd28f0be638a564bdd0a6c67a153e3d0a77d8d38e4421ea24"
+    },
+    {
+      "arquivo": "assets/crests/20.png",
+      "estado": "novo",
+      "sha256": "6ffb248615b4f74b30542c7fad2caaedbb8546006facfa31efaf73e58c0cb4e7"
+    },
+    {
+      "arquivo": "assets/crests/21.png",
+      "estado": "novo",
+      "sha256": "69212385e3ce35c4552740e85208cbe7c00e91641299696690697caa711c2cf0"
+    },
+    {
+      "arquivo": "assets/crests/22.png",
+      "estado": "novo",
+      "sha256": "65df697fd8f6c68529549b21a70e9949a9f82d883dad774e39a101bd9cb56fac"
+    },
+    {
+      "arquivo": "assets/crests/23.png",
+      "estado": "novo",
+      "sha256": "42a76f40c3de2834eef00644dfb4e8d0abe4bfd680e2c251248171b44b5e6ed9"
+    },
+    {
+      "arquivo": "assets/crests/24.png",
+      "estado": "novo",
+      "sha256": "849f7e92c54f2640acc81335ef99c35c9d47ebf4cd5e5e01ce1580e23d50eda7"
+    },
+    {
+      "arquivo": "assets/crests/25.png",
+      "estado": "novo",
+      "sha256": "655d76ceec40095fc28b19df76bee6adeaf5ebd9785b1033cffd7ffe0f58f601"
+    },
+    {
+      "arquivo": "assets/crests/26.png",
+      "estado": "novo",
+      "sha256": "2fb3c463fb90841708baa742d8a0918893fedbd112659579f7152a0c6684286b"
+    },
+    {
+      "arquivo": "assets/crests/27.png",
+      "estado": "novo",
+      "sha256": "57b5be862146e9ef4c126ae68502689c4fd9d13be988c8f9706579653129bdf6"
+    },
+    {
+      "arquivo": "assets/crests/28.png",
+      "estado": "novo",
+      "sha256": "a024266d0ca6cd9208eb477c2ff242429b8af7e6d106e719782fc9288d7dafa9"
+    },
+    {
+      "arquivo": "assets/crests/29.png",
+      "estado": "novo",
+      "sha256": "e6f962e3edde6f743794115ed483664f28db184bc67584cd922e5eefdf881005"
+    },
+    {
+      "arquivo": "assets/crests/3.png",
+      "estado": "novo",
+      "sha256": "62e65071c93a7307ed2c5669f4fe5a1297d405c058b532a6294de780df09cfe7"
+    },
+    {
+      "arquivo": "assets/crests/30.png",
+      "estado": "novo",
+      "sha256": "d503e457c3ca457ce91beb900252ef3de52979709e955399c2caefc4338475de"
+    },
+    {
+      "arquivo": "assets/crests/31.png",
+      "estado": "novo",
+      "sha256": "457e3ae47ca1a8f3577c5b20ceb43cfed261099993d7b69dabf6d470a4d23b0a"
+    },
+    {
+      "arquivo": "assets/crests/4.png",
+      "estado": "novo",
+      "sha256": "baf1bb2e42286ca76bf35d953e89f64d47640386dc6e360f8c6eee3ea0d482cd"
+    },
+    {
+      "arquivo": "assets/crests/5.png",
+      "estado": "novo",
+      "sha256": "29e55e2557a10f7cd6b5b9ed2a32707a871fbda7fbe4408d27ed7ed673f17f37"
+    },
+    {
+      "arquivo": "assets/crests/6.png",
+      "estado": "novo",
+      "sha256": "a74511ad022b00409cf2fa3a36d8f17240865243cacb0fca14d2cc48f145bf43"
+    },
+    {
+      "arquivo": "assets/crests/7.png",
+      "estado": "novo",
+      "sha256": "89f2c151a0ad82525b3375dc897828632e61b9d154bebce719a9fdf41b1648f1"
+    },
+    {
+      "arquivo": "assets/crests/8.png",
+      "estado": "novo",
+      "sha256": "7380306144df78c15d4d1b2ddc57bd7585b9b80ef057471d57070ee38952e163"
+    },
+    {
+      "arquivo": "assets/crests/9.png",
+      "estado": "novo",
+      "sha256": "c6dd22b07be603cadbe9924acaf568edb614d26aa6b2b5a6a6ef4f8653f87c7d"
+    },
+    {
+      "arquivo": "assets/crests/espn-10060.png",
+      "estado": "novo",
+      "sha256": "f213c4c61740d11497f60bad977148df61931f8c57809d49424e3d96e52d17bc"
+    },
+    {
+      "arquivo": "assets/crests/espn-1007.png",
+      "estado": "novo",
+      "sha256": "fb1f15fdce258ce48b1c66949f67a6c0e61ead6e1a11015fe458547b0d872a61"
+    },
+    {
+      "arquivo": "assets/crests/espn-10094.png",
+      "estado": "novo",
+      "sha256": "4587cd91c3884c7af2131bdaf6283606a5949a992c0f7ac96a129ffbe59e2fb4"
+    },
+    {
+      "arquivo": "assets/crests/espn-10311.png",
+      "estado": "novo",
+      "sha256": "0b715d63028f705d87e13e38aff02f75a45cf8790dbfd670ef4870b0a96c7726"
+    },
+    {
+      "arquivo": "assets/crests/espn-11995.png",
+      "estado": "novo",
+      "sha256": "d08a6be1e77c7d707e2156a4f8d4c335798dd178abaa1ea464be2eef5a84b06e"
+    },
+    {
+      "arquivo": "assets/crests/espn-12.png",
+      "estado": "novo",
+      "sha256": "4b659b7267fbd6025bae8556c2de3d90ca768df64d8160c86d58b0948a6d533f"
+    },
+    {
+      "arquivo": "assets/crests/espn-13481.png",
+      "estado": "novo",
+      "sha256": "721f65d25725a1e2a15f40f2c6585a9df108f8b9206d1b83de7737cbe4d2c062"
+    },
+    {
+      "arquivo": "assets/crests/espn-15.png",
+      "estado": "novo",
+      "sha256": "47d565be5fee7838990bcc5c806082e6176a9d417c79291a9ce9d4d3fd6a4e65"
+    },
+    {
+      "arquivo": "assets/crests/espn-16.png",
+      "estado": "novo",
+      "sha256": "59e5e95f73887ab084125015cf10c900f1c5187e36973f0688f3f18b5b805ac6"
+    },
+    {
+      "arquivo": "assets/crests/espn-17.png",
+      "estado": "novo",
+      "sha256": "ffa4db6803a77f59acdaa78aa5d34572f5d1fb8627d866e99b5ae6ebc97c0000"
+    },
+    {
+      "arquivo": "assets/crests/espn-17086.png",
+      "estado": "novo",
+      "sha256": "5eed9febbcc3c42c88db9890fd4f53cd6625aef4f5a4d5ba39937ba7d5bd5359"
+    },
+    {
+      "arquivo": "assets/crests/espn-17090.png",
+      "estado": "novo",
+      "sha256": "ddc65a00cb2046080d008821e76f84a706b1c462624a85321b90702a84a41bec"
+    },
+    {
+      "arquivo": "assets/crests/espn-17702.png",
+      "estado": "novo",
+      "sha256": "b94bc2417bb0433e60883908ec57bfef8ae60cd6484022d2f681d7dcf285ce40"
+    },
+    {
+      "arquivo": "assets/crests/espn-18.png",
+      "estado": "novo",
+      "sha256": "aad54d31906d7916b162f228c5c98a67cfc57ef4a1f2e73471935d9b739dcef8"
+    },
+    {
+      "arquivo": "assets/crests/espn-18439.png",
+      "estado": "novo",
+      "sha256": "1d80cb9a05305e23c8bc68b265dcfad2fd6078d689d93abe92e7f74d0eafa9e2"
+    },
+    {
+      "arquivo": "assets/crests/espn-18995.png",
+      "estado": "novo",
+      "sha256": "72a161235f5dbf16a5976f6aa56b60006e42af101b9097f4ca39e95229ce7b49"
+    },
+    {
+      "arquivo": "assets/crests/espn-19002.png",
+      "estado": "novo",
+      "sha256": "e95fa5dc76de88565fd68e06ac049aecfb33281c0bf42768e0a0c665f66f5fa1"
+    },
+    {
+      "arquivo": "assets/crests/espn-19425.png",
+      "estado": "novo",
+      "sha256": "6a5b54f6247aa6154391b7765a4afa52d289cdff7433249a45bc3bf6006c5f10"
+    },
+    {
+      "arquivo": "assets/crests/espn-20695.png",
+      "estado": "novo",
+      "sha256": "bcab6c70e7839972e98ee90051b94c15f6e87a8a1da65ebb923611e8c3f03da9"
+    },
+    {
+      "arquivo": "assets/crests/espn-20889.png",
+      "estado": "novo",
+      "sha256": "ced400bd5c572f369bf27c9747f3ded371065f659f970d38b591cd93d6b56aa2"
+    },
+    {
+      "arquivo": "assets/crests/espn-21819.png",
+      "estado": "novo",
+      "sha256": "c73b8ae3f1ecc9cff99d47671d158223cbdac3426b108a6b2a34b81d4086e07b"
+    },
+    {
+      "arquivo": "assets/crests/espn-21843.png",
+      "estado": "novo",
+      "sha256": "6a2867564a234dba46912464ca1a70df4a6adc0f103edff1afe0493678753906"
+    },
+    {
+      "arquivo": "assets/crests/espn-22137.png",
+      "estado": "novo",
+      "sha256": "179f759bd349b5a781a0f97965b2567a1aad9b5b4dbd7897844120072e76d273"
+    },
+    {
+      "arquivo": "assets/crests/espn-22517.png",
+      "estado": "novo",
+      "sha256": "ad0af2ab638f851b6697ac32d788b8acc3bfbefad379275d09201195efed8b46"
+    },
+    {
+      "arquivo": "assets/crests/espn-2670.png",
+      "estado": "novo",
+      "sha256": "c6381e34e05bb707075151da89cf78a3e4910669bfb7f676c9bba5c72f2b3d38"
+    },
+    {
+      "arquivo": "assets/crests/espn-2671.png",
+      "estado": "novo",
+      "sha256": "43eb724ef018faf8e24eab6e26361726194a247b580994ee2c6c7955d35e3876"
+    },
+    {
+      "arquivo": "assets/crests/espn-2673.png",
+      "estado": "novo",
+      "sha256": "ebafffdd63500b257b2f04833ffbe6244c5b56308a6b06ac8cd2a1aa260438c5"
+    },
+    {
+      "arquivo": "assets/crests/espn-2675.png",
+      "estado": "novo",
+      "sha256": "3913ce30410bcc98e99c78d07d5254af0890552451442347315ad63c3667d45b"
+    },
+    {
+      "arquivo": "assets/crests/espn-2681.png",
+      "estado": "novo",
+      "sha256": "c21dec64cb5cf32cd76011472442e979f69b2f586b7ae15381dc96537ac9405c"
+    },
+    {
+      "arquivo": "assets/crests/espn-2683.png",
+      "estado": "novo",
+      "sha256": "a7e979bcefed56e7a3173197c9310c8fc94f55123870c99e272b287d4c5f5aea"
+    },
+    {
+      "arquivo": "assets/crests/espn-2684.png",
+      "estado": "novo",
+      "sha256": "fe971f9ce1e8eb3327a85664e0003698884e3f4db9b49229a6b4f4824b9039dc"
+    },
+    {
+      "arquivo": "assets/crests/espn-2685.png",
+      "estado": "novo",
+      "sha256": "6032fa9b92a54ecdb718923d001f268d1b515f30d74f64aab0c9329f8792a55b"
+    },
+    {
+      "arquivo": "assets/crests/espn-2686.png",
+      "estado": "novo",
+      "sha256": "7ed9609d0d056e59d2f200b6cfc5b928e9e5bb42d84dfed27adfb3e3326a7cc9"
+    },
+    {
+      "arquivo": "assets/crests/espn-2690.png",
+      "estado": "novo",
+      "sha256": "f651f2cb3f6870e6c390cc8b48e44bbbc17f729f4a0e1cb8245864811b10b591"
+    },
+    {
+      "arquivo": "assets/crests/espn-3.png",
+      "estado": "novo",
+      "sha256": "662be7495ac6ea0ad420de90c9c4a3a556b3e89c5214f8cf232793cb03d94610"
+    },
+    {
+      "arquivo": "assets/crests/espn-3372.png",
+      "estado": "novo",
+      "sha256": "c1348093098ef77e5aac7efc8adbd81a18aba3ef9f1c6d1864a1cfe1a55e28ad"
+    },
+    {
+      "arquivo": "assets/crests/espn-4133.png",
+      "estado": "novo",
+      "sha256": "d7e98042404b147e916d5107386759417e0577fdd8a14988497e6482ca266a07"
+    },
+    {
+      "arquivo": "assets/crests/espn-4134.png",
+      "estado": "novo",
+      "sha256": "a24b3763f6956be6e6dd4fc584bd5e602d7186f0dc2279e4200a84ae18a4497f"
+    },
+    {
+      "arquivo": "assets/crests/espn-4138.png",
+      "estado": "novo",
+      "sha256": "3bece0116b97762989e8b9df4df5cdf05674b369a670fe1cdb94dede3d3bdbb9"
+    },
+    {
+      "arquivo": "assets/crests/espn-4139.png",
+      "estado": "novo",
+      "sha256": "9bb0528b38123f225e6df825d59b7da087e6b44d8fa069946dcd78096599260d"
+    },
+    {
+      "arquivo": "assets/crests/espn-4422.png",
+      "estado": "novo",
+      "sha256": "a28ebebdd5846710ec80d36d33e26e26a39b309a9dc90ab8b8c6284967949ca2"
+    },
+    {
+      "arquivo": "assets/crests/espn-4811.png",
+      "estado": "novo",
+      "sha256": "277d616cf3cebf1be5870a1a1091c832edbff9384a6c1640a6f0a76169c1bb9a"
+    },
+    {
+      "arquivo": "assets/crests/espn-4812.png",
+      "estado": "novo",
+      "sha256": "8caf876440c4cadcda0176644a42fb576f6f6a3d50f87401e705906394fabeb6"
+    },
+    {
+      "arquivo": "assets/crests/espn-4815.png",
+      "estado": "novo",
+      "sha256": "cef12aead671b5e63c0dd63acf9aefb63aaed1b4382bdcb7be25b2f054f2f931"
+    },
+    {
+      "arquivo": "assets/crests/espn-4816.png",
+      "estado": "novo",
+      "sha256": "de89a7f48685fed296692a540829360f832060eb626ed8fdc922b3080e861fe4"
+    },
+    {
+      "arquivo": "assets/crests/espn-4818.png",
+      "estado": "novo",
+      "sha256": "9ab6332c42131acccb508a9f3bb776f6b4fe237744de0f63da431adc44f374a1"
+    },
+    {
+      "arquivo": "assets/crests/espn-5.png",
+      "estado": "novo",
+      "sha256": "4540739c0129ca15533448f40dc85350117c87c5b724555747cd662a5b4e9cce"
+    },
+    {
+      "arquivo": "assets/crests/espn-5264.png",
+      "estado": "novo",
+      "sha256": "07aece62e3aedabd75ba3a7e8a285f12bac697a826bf2a37c6ea000878159258"
+    },
+    {
+      "arquivo": "assets/crests/espn-5267.png",
+      "estado": "novo",
+      "sha256": "843caa569c32302e6f3195ac24fda309ed003261c205157881a4ee49d3a221e1"
+    },
+    {
+      "arquivo": "assets/crests/espn-5484.png",
+      "estado": "novo",
+      "sha256": "e7a8949bc9ee21b7f4bcc449614ccd1e98e50af766b03e62c34c58a49d1733ab"
+    },
+    {
+      "arquivo": "assets/crests/espn-5488.png",
+      "estado": "novo",
+      "sha256": "fb90cd72bdad8013d18239501736dcb3d77fe3b7bf31e414bc7cf3cc0947406f"
+    },
+    {
+      "arquivo": "assets/crests/espn-5489.png",
+      "estado": "novo",
+      "sha256": "4a304b4e64f7f832f0ee01e110bd6ed4977606a644250ce8fd101e7150e9e0fe"
+    },
+    {
+      "arquivo": "assets/crests/espn-5492.png",
+      "estado": "novo",
+      "sha256": "8ca788f309f4ba7c59726f5c65d81fd260997c6ae8c49d19d90a19a4e94f8885"
+    },
+    {
+      "arquivo": "assets/crests/espn-5584.png",
+      "estado": "novo",
+      "sha256": "28466cb380610d7b3270d810ccfcda068fd6c267408ecf51a185a7c3a295871c"
+    },
+    {
+      "arquivo": "assets/crests/espn-6037.png",
+      "estado": "novo",
+      "sha256": "b5f6e8138f651ea6bf2ce8113e9f6c3af90c5ce27b1e6352d74f225b929c2b64"
+    },
+    {
+      "arquivo": "assets/crests/espn-6041.png",
+      "estado": "novo",
+      "sha256": "7651a7b83603ba8dc4955311e64151b3e411de172ea1172efe3eb79963f842e3"
+    },
+    {
+      "arquivo": "assets/crests/espn-6047.png",
+      "estado": "novo",
+      "sha256": "8b6142ddeede5ca83bc199b32c9823ed330e0eac722094270c3feaefb91d095c"
+    },
+    {
+      "arquivo": "assets/crests/espn-6072.png",
+      "estado": "novo",
+      "sha256": "357455c18f41c8f6f226826969e6304f0e0f856cc79fb19ed00d1bd3b3ec3b71"
+    },
+    {
+      "arquivo": "assets/crests/espn-6097.png",
+      "estado": "novo",
+      "sha256": "51d5c00997626307a50889799b4038d3ac8efe1d44dd806e81a1cbd47ebcb5aa"
+    },
+    {
+      "arquivo": "assets/crests/espn-6137.png",
+      "estado": "novo",
+      "sha256": "97857025293cbe450c56f7ad23c1eae52705a8fccd4878ad419b961e227fb888"
+    },
+    {
+      "arquivo": "assets/crests/espn-7312.png",
+      "estado": "novo",
+      "sha256": "744e03c89817ec6a4473ea4f7f65edbf36cbc05dc23a1198877323753ea36605"
+    },
+    {
+      "arquivo": "assets/crests/espn-7385.png",
+      "estado": "novo",
+      "sha256": "e31713447aaffe3a867b3884a4a098d8dfc93524773dc49c3a925ff82bba6689"
+    },
+    {
+      "arquivo": "assets/crests/espn-7466.png",
+      "estado": "novo",
+      "sha256": "ee644f92bc6986a277fdede9bdb8b5b46f43557db12232d98daa56ea3d915276"
+    },
+    {
+      "arquivo": "assets/crests/espn-7764.png",
+      "estado": "novo",
+      "sha256": "000b65e37efddaab4a0d9681c65e33f49926a18b67ca4797d08829c36a9e47e2"
+    },
+    {
+      "arquivo": "assets/crests/espn-7767.png",
+      "estado": "novo",
+      "sha256": "8493483681a70b2c961449710d5f2e9d947490c16218d68df9d79c21712fbe7f"
+    },
+    {
+      "arquivo": "assets/crests/espn-8.png",
+      "estado": "novo",
+      "sha256": "ea4c103fc8a5bc678599313d50a0aa0c31a34fc0e7f9ca9be2ac19203995a361"
+    },
+    {
+      "arquivo": "assets/crests/espn-8109.png",
+      "estado": "novo",
+      "sha256": "3248ecc8f1e156d40caf05001cf93e35e9dd5e84e6513edd5d4b59c2ea004248"
+    },
+    {
+      "arquivo": "assets/crests/espn-8186.png",
+      "estado": "novo",
+      "sha256": "ad3799003c892771f7a0de100ea704a3235f588f32dd67c07868aa99acd4160b"
+    },
+    {
+      "arquivo": "assets/crests/espn-8416.png",
+      "estado": "novo",
+      "sha256": "3b476393948debee88797f748203a6550c6240da574d1c9a820cac088f454eed"
+    },
+    {
+      "arquivo": "assets/crests/espn-885.png",
+      "estado": "novo",
+      "sha256": "db838bfaea7cffb04a3671712f5f959b5a8f9cd47fcf8d819cc0f85a4fd8ca83"
+    },
+    {
+      "arquivo": "assets/crests/espn-9497.png",
+      "estado": "novo",
+      "sha256": "5e5aa10130f44af049a04dd10c19c7cc878c5ba1dfd30e5d3416fb126e92c4a4"
+    },
+    {
+      "arquivo": "assets/crests/espn-9744.png",
+      "estado": "novo",
+      "sha256": "bb279491a2be86dbb7e6d929884ea422d26cf26265be4f94012186b67f71e834"
+    },
+    {
+      "arquivo": "assets/crests/espn-9903.png",
+      "estado": "novo",
+      "sha256": "e5547b9286954afe2208d84cc97306138946f1402977712244170df4047836df"
+    },
+    {
+      "arquivo": "assets/crests/espn-9999.png",
+      "estado": "novo",
+      "sha256": "6f0ce34f33a05aa9254f2337e4e99685c9f51fbc277f658afca47a7a22e546ba"
+    },
+    {
+      "arquivo": "career-core.mjs",
+      "estado": "novo",
+      "sha256": "14eb19e326569fad0e2320f0542e2e4d2f55537200c6b78979c20e709af26ab7"
+    },
+    {
+      "arquivo": "clubs.json",
+      "estado": "novo",
+      "sha256": "66d825458a2e1d328d40c9c9205ecf1c22e8f16af799f377c5096c0df5264bb8"
+    },
+    {
+      "arquivo": "competitions.json",
+      "estado": "novo",
+      "sha256": "c5f766061e4b08d72abf8852bcc44e43f04169e1f8e9dae6dc402a51bc262d9d"
+    },
+    {
+      "arquivo": "design-qa.md",
+      "estado": "novo",
+      "sha256": "7770c14eefaf2f3ce874b2fb995ebec2ae1a70b101cedac6f0acb38298aefb90"
+    },
+    {
+      "arquivo": "engine-bridge.js",
+      "estado": "novo",
+      "sha256": "8358c0dc374657a55e72efb1ab4e6b8967fb93e3178a178fd3173599aaad1612"
+    },
+    {
+      "arquivo": "game.html",
+      "estado": "novo",
+      "sha256": "0d27557f9fa5465d9ba769702fbba2e8a29e38ce585360a70b791dc69f59eaa5"
+    },
+    {
+      "arquivo": "index.html",
+      "estado": "alterado",
+      "sha256": "998d8440574a922b4664b8de490535334aa3a664c5c8c3b280f4f40bea6e3dcf"
+    },
+    {
+      "arquivo": "interface.css",
+      "estado": "novo",
+      "sha256": "2c490b35931ba66da6e5bf8eada27c03f9f37f03a1b1d7c09d141214e2afbd4f"
+    },
+    {
+      "arquivo": "interface.js",
+      "estado": "novo",
+      "sha256": "443080a7c32257d4e89260da8073cabf3dd7ad24627ca2338b012b3a7dad1f5d"
+    },
+    {
+      "arquivo": "live-data.mjs",
+      "estado": "novo",
+      "sha256": "5cdd7dd3d4440bd9eef0c96c992660694abf923840deb524a3dc4434bacd6cc4"
+    },
+    {
+      "arquivo": "package.json",
+      "estado": "novo",
+      "sha256": "05bbc9a0ae2bacaa372883c633891c0bf913cc28e9985a260aa668f9816a0885"
+    },
+    {
+      "arquivo": "server.cjs",
+      "estado": "novo",
+      "sha256": "7b88a43b61b656d47828fef74b9e3296e237085e1a2d7393abb3af512b8e7ee4"
+    },
+    {
+      "arquivo": "teams_br2.json",
+      "estado": "alterado",
+      "sha256": "b08350cfc640ae6cbcd07fdac3fa43b34174b4f27798c12db851e176ec604fd6"
+    },
+    {
+      "arquivo": "tests/career-core.test.mjs",
+      "estado": "novo",
+      "sha256": "3ee9c504d41908b633fcbab1cb41fc604cd8b996456fd7e5b03682a9941b8f88"
+    },
+    {
+      "arquivo": "tests/engine-bridge.test.cjs",
+      "estado": "novo",
+      "sha256": "9cd1c314b67ee8744df5e41f6f97f91e7259d1657c23f4d91fd59bce575a4eea"
+    },
+    {
+      "arquivo": "tests/live-data.test.mjs",
+      "estado": "novo",
+      "sha256": "641ccdd5b3f2afc1436cbd41454550e6909fdb48119ffada8fcf40f742bb5131"
+    }
+  ]
+}
