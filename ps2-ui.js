@@ -4,7 +4,7 @@
 'use strict';
 var P=window.PS2;if(!P||window.PS2_EDITOR)return;
 var LG=[['Inglaterra','ENG'],['Espanha','ESP'],['Copa do Mundo','COPA'],['Itália','ITA'],['França','FRA'],['Brasil','BRA'],['México','MEX'],['América do Norte','AMN'],['Argentina','ARG'],['Holanda','HOL'],['Alemanha','ALE'],['Rússia','RUS']],
-LGPOS=[[180,135],[480,135],[780,135],[180,230],[480,230],[780,230],[180,323],[480,323],[780,323],[180,415],[480,415],[780,415]];
+LGPOS=[[180,136.8],[480,136.8],[480,417.6],[180,230.4],[480,230.4],[780,230.4],[180,324],[480,324],[780,324],[180,417.6],[780,417.6],[780,136.8]];
 var ICO={home:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',cup:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4c0 3 1.5 4.5 4 5M16 6h4c0 3-1.5 4.5-4 5M12 13v4M8 21h8M10 17h4"/>',job:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18"/>',pen:'<path d="M4 20l1-4L16 5l3 3L8 19zM14 7l3 3"/>',help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>'};
 function ico(n){return '<svg viewBox="0 0 24 24" width="1.3em" height="1.3em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICO[n]+'</svg>'}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
@@ -49,10 +49,10 @@ mk('ps2-table','ps2ui','<div class="pg"><div><div class="lbl">Campeonato rápido
 mk('ps2-vs','ps2ui','<div class="ct"><div class="gl vs"><div class="lbl" style="text-align:center">Próxima partida</div><div class="vsr"><div class="tm"><img id="vsA" alt=""><b id="vsAn"></b></div><div class="vsx">VS</div><div class="tm"><img id="vsB" alt=""><b id="vsBn"></b></div></div><div class="bar"><button class="ub" data-t="130,482">Menu</button><button class="ub" data-t="480,482">Como jogar</button><button class="ub pri" data-next="1">Próximo</button></div></div></div>');
 /* placar */
 var sb=mk('ps2sb','','<div class="g"><div class="cr cl"><img id="sbIl" alt=""></div><div class="nm nl" id="sbNl"></div><div class="sc"><svg class="tr" viewBox="0 0 24 18" fill="#ffd400"><path d="M6 1h12v6a6 6 0 0 1-12 0zM6 3H1c0 4 2 6 5 6.5M18 3h5c0 4-2 6-5 6.5M10 13h4v2h2v2H8v-2h2z"/></svg><span id="sbSc">0x0</span></div><div class="nm nr" id="sbNr"></div><div class="cr cx"><img id="sbIr" alt=""></div><div class="dt dl" id="sbDl"></div><div class="dt dr" id="sbDr"></div></div>');
-Object.keys(els).forEach(function(id){if(id==='ps2sb')return;els[id].addEventListener('click',function(e){var b=e.target.closest('button');if(!b||b.disabled)return;
+Object.keys(els).forEach(function(id){if(id==='ps2sb')return;['pointerdown','pointerup','pointermove','mousedown','mouseup','touchstart','touchend'].forEach(function(type){els[id].addEventListener(type,function(e){e.stopPropagation()})});els[id].addEventListener('click',function(e){e.stopPropagation();var b=e.target.closest('button');if(!b||b.disabled)return;
 if(b.dataset.go){location.href=b.dataset.go;return}
 if(b.dataset.teamUid){selectTeam(b.dataset.teamUid);return}
-if(b.dataset.teamContinue){var rt=P.rt();if(rt)rt.globalVars.SKIP_GROUPS=els['ps2-teams'].querySelector('#skipGroups').checked?'yes':'no';P.tap(840,486);return}
+if(b.dataset.teamContinue){var rt=P.rt();if(rt&&rt.layout.name==='teamPick'&&chosenTeam){rt.globalVars.SKIP_GROUPS=els['ps2-teams'].querySelector('#skipGroups').checked?'yes':'no';if(typeof rt.goToLayout==='function'){rt.goToLayout('beforeMatchGroups');return}}P.tap(840,486);return}
 if(b.dataset.next){var rt=P.rt();if(rt&&rt.globalVars.leagueNum===P.league)P.openPick();else P.tap(840,482);return}
 if(b.dataset.t){var c=b.dataset.t.split(',');P.tap(+c[0],+c[1])}})});
 setInterval(tick,100);
