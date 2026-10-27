@@ -20,7 +20,7 @@ if(window.PS2_EDITOR)return;
 var O=XMLHttpRequest.prototype.open;
 XMLHttpRequest.prototype.open=function(m,u){try{this.__ps2=/teams_br2\.json/.test(u)}catch(e){}return O.apply(this,arguments)};
 var dT=Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype,'responseText'),dR=Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype,'response');
-function fix(txt){try{var d=P.load().t,j=JSON.parse(txt),id,e,r;for(id in d){e=d[id];r=j.data[+id];if(!r)continue;if(e.n)r[0][0]=e.n;if(e.s)r[4][0]=e.s}return JSON.stringify(j)}catch(x){return txt}}
+function fix(txt){try{var d=P.load().t,j=JSON.parse(txt),id,e,r;for(id in d){e=d[id];r=j.data[+id];if(!r)continue;if(e.n)r[0][0]=e.n;if(e.s)r[4][0]=e.s;if(typeof e.u1==='string'&&/^(0[1-9]|1[0-3])(?:0[0-9]|1[0-9]|20){3}$/.test(e.u1))r[2][0]=e.u1;if(typeof e.u2==='string'&&/^(0[1-9]|1[0-3])(?:0[0-9]|1[0-9]|20){3}$/.test(e.u2))r[3][0]=e.u2}return JSON.stringify(j)}catch(x){return txt}}
 Object.defineProperty(XMLHttpRequest.prototype,'responseText',{configurable:true,get:function(){var v=dT.get.call(this);return(this.__ps2&&this.readyState===4)?fix(v):v}});
 Object.defineProperty(XMLHttpRequest.prototype,'response',{configurable:true,get:function(){var v=dR.get.call(this);if(!(this.__ps2&&this.readyState===4))return v;if(typeof v==='string')return fix(v);if(v&&typeof v==='object')return JSON.parse(fix(JSON.stringify(v)));return v}});
 /* 2) interface sobre o jogo */
