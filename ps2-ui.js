@@ -24,7 +24,7 @@ var CSS='.ps2ui{position:fixed;inset:0;z-index:30;display:none;color:#f4f7f5;fon
 +'#ps2sb .nm{display:flex;align-items:center;justify-content:center;background:#090266;font-size:1.2em;letter-spacing:.015em;white-space:nowrap;overflow:hidden;text-overflow:clip;padding:0 .25em}#ps2sb .nm.sm{font-size:1em}#ps2sb .nm.xs{font-size:.8em}#ps2sb .nl{grid-column:2;grid-row:1}#ps2sb .nr{grid-column:4;grid-row:1}#ps2sb .nm.on{box-shadow:inset 0 -.09em 0 #b8f900}'
 +'#ps2sb .sc{grid-column:3;grid-row:2;position:relative;display:flex;align-items:center;justify-content:center;background:#a9f500;color:#08005d;font-family:Arial,sans-serif;font-size:2em;line-height:1;letter-spacing:-.04em;text-transform:none}#ps2sb .tr{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:2.1em;height:1.15em;fill:#e6f344;filter:drop-shadow(0 0 .09em rgba(255,255,255,.75))}'
 +'#ps2sb .dt{display:flex;align-items:center;justify-content:center;gap:.15em;background:#fff;overflow:hidden;padding:0 .18em}#ps2sb .dl{grid-column:2;grid-row:2}#ps2sb .dr{grid-column:4;grid-row:2}#ps2sb .d{width:1.9em;height:1.9em;flex:0 1 1.9em;min-width:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#080808;font-family:Arial,sans-serif;font-style:normal;font-size:.88em;line-height:1;color:#fff;font-weight:900}#ps2sb .d.g{background:#00d4b5;color:#001b20}#ps2sb .d.m{background:#ed1749}#ps2sb .d.c{box-shadow:0 0 0 .12em #a9f500}';
-var chosenTeam='',teamsSignature='',teamScrollingUntil=0,lastTeamScan=0,els={},cur='',sbOn=false,whoAt=[],lastSn=0,oldHide=false,css=document.createElement('style');
+var chosenTeam='',teamsSignature='',teamScrollingUntil=0,lastTeamScan=0,teamSelectToken=0,els={},cur='',sbOn=false,whoAt=[],lastSn=0,oldHide=false,css=document.createElement('style');
 css.textContent=CSS;
 function mk(id,cls,html){var d=document.createElement('div');d.id=id;d.className=cls;d.innerHTML=html;document.body.appendChild(d);els[id]=d;return d}
 function tap(x,y){return function(){P.tap(x,y)}}
@@ -41,15 +41,14 @@ mk('ps2-menu','ps2ui','<div class="mm"><nav class="gl rail"><button class="on" a
 +'<div class="mmc"><div class="gl hero"><div class="lbl">Futebol de pênaltis</div><div class="wm">Penalty<b>Shooters 2</b></div><p>Escolha seu time, defina os cobradores e vá até a final.</p><div class="acts"><button class="ub pri" data-t="480,300">Campeonato rápido</button><button class="ub" disabled>Nova carreira <small>EM BREVE</small></button><button class="ub" disabled>Carregar carreira <small>EM BREVE</small></button></div></div>'
 +'<div class="side"><div class="gl card"><div class="lbl">Liga atual</div><div class="row"><span class="chip" id="mmChip">BRA</span><h4 id="mmLg">Brasil</h4></div><button class="ub" data-t="230,407">Trocar liga</button></div><div class="gl card" id="mmEd"><div class="lbl">Personalizar</div><h4>Editor de times</h4><button class="ub" data-go="editor.html">Abrir editor</button></div><button class="ub" data-t="740,407">Como jogar</button></div></div></div>');
 /* Seleção de time: os botões acionam os controles originais do jogo. */
-mk('ps2-teams','ps2ui','<div class="pg"><div class="lbl">Campeonato rápido</div><h2>Escolha seu time</h2><p>Selecione um clube para continuar.</p><div class="grid" id="teamGrid"></div><div class="bar"><button class="ub" data-page="prev">Anterior</button><button class="ub" data-page="next">Mais times</button><button class="ub pri" id="teamContinue" data-team-continue="1" disabled>Continuar</button></div></div>');
+mk('ps2-teams','ps2ui','<div class="pg"><div class="lbl">Campeonato rápido</div><h2>Escolha seu time</h2><p>Selecione um clube para continuar.</p><div class="grid" id="teamGrid"></div><p id="teamStatus" role="status"></p><div class="bar"><button class="ub pri" id="teamContinue" data-team-continue="1" disabled>Continuar</button></div></div>');
 /* VS */
 mk('ps2-vs','ps2ui','<div class="ct"><div class="gl vs"><div class="lbl" style="text-align:center">Próxima partida</div><div class="vsr"><div class="tm"><img id="vsA" alt=""><b id="vsAn"></b></div><div class="vsx">VS</div><div class="tm"><img id="vsB" alt=""><b id="vsBn"></b></div></div><div class="bar"><button class="ub" data-t="130,482">Menu</button><button class="ub" data-t="480,482">Como jogar</button><button class="ub pri" data-next="1">Próximo</button></div></div></div>');
 /* placar */
 var sb=mk('ps2sb','','<div class="g"><div class="cr cl"><img id="sbIl" alt=""></div><div class="nm nl" id="sbNl"></div><div class="sc"><svg class="tr" viewBox="0 0 24 18" fill="#ffd400"><path d="M6 1h12v6a6 6 0 0 1-12 0zM6 3H1c0 4 2 6 5 6.5M18 3h5c0 4-2 6-5 6.5M10 13h4v2h2v2H8v-2h2z"/></svg><span id="sbSc">0x0</span></div><div class="nm nr" id="sbNr"></div><div class="cr cx"><img id="sbIr" alt=""></div><div class="dt dl" id="sbDl"></div><div class="dt dr" id="sbDr"></div></div>');
 Object.keys(els).forEach(function(id){if(id==='ps2sb')return;els[id].addEventListener('click',function(e){var b=e.target.closest('button');if(!b||b.disabled)return;
 if(b.dataset.go){location.href=b.dataset.go;return}
-if(b.dataset.teamUid){var rt=P.rt(), inst=rt&&rt.objects.TeamButton.getAllInstances().find(function(v){return String(v.uid)===b.dataset.teamUid});if(inst){var q=inst.layer.layerToCssPx(inst.x+inst.width*.48,inst.y+inst.height*.3),cv=document.querySelector('canvas').getBoundingClientRect();P.tap((q[0]-cv.left)/cv.width*960,(q[1]-cv.top)/cv.height*540);chosenTeam=b.dataset.teamUid;setTimeout(drawTeams,150)}return}
-if(b.dataset.page){if(Date.now()<teamScrollingUntil)return;teamScrollingUntil=Date.now()+900;var grid=els['ps2-teams'].querySelector('#teamGrid');grid.style.opacity='.55';grid.style.pointerEvents='none';P.tap(b.dataset.page==='prev'?34:926,294);setTimeout(function(){teamScrollingUntil=0;lastTeamScan=0;grid.style.opacity='';grid.style.pointerEvents='';drawTeams()},900);return}
+if(b.dataset.teamUid){selectTeam(b.dataset.teamUid);return}
 if(b.dataset.teamContinue){P.tap(840,486);return}
 if(b.dataset.next){var rt=P.rt();if(rt&&rt.globalVars.leagueNum===P.league)P.openPick();else P.tap(840,482);return}
 if(b.dataset.t){var c=b.dataset.t.split(',');P.tap(+c[0],+c[1])}})});
@@ -60,9 +59,15 @@ function hideOld(){var rt=P.rt();if(!rt)return;var o=rt.objects;['result_base','
 try{o.midText.getAllInstances().forEach(function(x){if(x.x>=590&&x.y>=350&&x.y<=445){x.isVisible=false;x.opacity=0}})}catch(e){}
 try{o.bigTextShotAnnouncement.getAllInstances().forEach(function(x){if(/TURN/i.test(String(x.text))){x.isVisible=false;x.opacity=0}})}catch(e){}}
 
-function drawTeams(){var rt=P.rt(), el=els['ps2-teams'],now=Date.now();if(!rt||!el||rt.layout.name!=='teamPick'||now<teamScrollingUntil||now-lastTeamScan<300)return;lastTeamScan=now;
-try{var cv=document.querySelector('canvas').getBoundingClientRect(),a=rt.objects.arrTeams.getFirstInstance(),items=[];
-rt.objects.TeamButton.getAllInstances().forEach(function(x){var q=x.layer.layerToCssPx(x.x+x.width*.48,x.y+x.height*.3);if(q[0]<cv.left+cv.width*.08||q[0]>cv.right-cv.width*.08||q[1]<cv.top+cv.height*.2||q[1]>cv.bottom-cv.height*.16)return;var id=+x.instVars.teambuttonID;if(!Number.isFinite(id))return;items.push({uid:String(x.uid),id:id,x:q[0],y:q[1]})});
+/* Usa a posição do controle original para selecionar qualquer clube da lista. */
+function selectTeam(uid){var token=++teamSelectToken,el=els['ps2-teams'],status=el.querySelector('#teamStatus');chosenTeam='';lastTeamScan=0;el.querySelector('#teamContinue').disabled=true;status.textContent='Selecionando time...';
+function step(attempt){var rt=P.rt();if(token!==teamSelectToken||!rt||rt.layout.name!=='teamPick')return;var inst=rt.objects.TeamButton.getAllInstances().find(function(v){return String(v.uid)===uid});if(!inst){status.textContent='Não foi possível selecionar. Tente novamente.';return}
+var cv=document.querySelector('canvas').getBoundingClientRect(),q=inst.layer.layerToCssPx(inst.x+inst.width*.48,inst.y+inst.height*.3),x=(q[0]-cv.left)/cv.width*960,y=(q[1]-cv.top)/cv.height*540;
+if(x<80||x>880){if(attempt>=4){status.textContent='Não foi possível selecionar. Tente novamente.';return}P.tap(x<80?34:926,294);setTimeout(function(){step(attempt+1)},900);return}
+P.tap(x,y);setTimeout(function(){var current=P.rt();if(token!==teamSelectToken||!current||current.layout.name!=='teamPick')return;if(+current.globalVars.myTeamID!==+inst.instVars.teambuttonID){status.textContent='Não foi possível selecionar. Tente novamente.';return}chosenTeam=uid;status.textContent='Time selecionado.';lastTeamScan=0;drawTeams()},250)}
+step(0)}
+function drawTeams(){var rt=P.rt(),el=els['ps2-teams'],now=Date.now();if(!rt||!el||rt.layout.name!=='teamPick'||now-lastTeamScan<300)return;lastTeamScan=now;
+try{var items=[];rt.objects.TeamButton.getAllInstances().forEach(function(x){var id=+x.instVars.teambuttonID;if(x.y<100||x.y>380||!Number.isFinite(id)||id<0)return;items.push({uid:String(x.uid),id:id,x:x.x,y:x.y})});
 items.sort(function(a,b){return a.y-b.y||a.x-b.x});var key=JSON.stringify(items.map(function(t){return [t.uid,t.id]}))+chosenTeam;if(key===teamsSignature)return;teamsSignature=key;items.forEach(function(t){var details=team(rt,t.id,rt.globalVars.leagueNum===P.league);t.name=details.n;t.logo=details.logo});
 el.querySelector('#teamGrid').innerHTML=items.map(function(t){return '<button class="gl lg'+(chosenTeam===t.uid?' on':'')+'" data-team-uid="'+esc(t.uid)+'"><img alt="" src="'+esc(t.logo)+'" style="width:2.8em;height:2.8em;object-fit:contain"><span><b>'+esc(t.name)+'</b></span></button>'}).join('');el.querySelector('#teamContinue').disabled=!chosenTeam;
 }catch(e){console.warn('PS2: não foi possível mostrar a seleção de times',e)}}
@@ -72,7 +77,7 @@ function tick(){
 var rt=P.rt();if(!rt){return}
 var lay='';try{lay=rt.layout.name}catch(e){}var g=rt.globalVars,br=g.leagueNum===P.league;
 var id=({splash:'ps2-splash',pickLeague:'ps2-league',mainMenu:'ps2-menu',teamPick:'ps2-teams',matchIntroV2:'ps2-vs'})[lay]||'';
-if(lay==='teamPick')drawTeams();else if(chosenTeam){chosenTeam='';teamsSignature='';teamScrollingUntil=0;lastTeamScan=0}
+if(lay==='teamPick')drawTeams();else if(chosenTeam){chosenTeam='';teamsSignature='';teamScrollingUntil=0;lastTeamScan=0;teamSelectToken++}
 if(lay==='mainMenu'){var l=LG[g.leagueNum]||['Liga','—'];els['ps2-menu'].querySelector('#mmLg').textContent=l[0];els['ps2-menu'].querySelector('#mmChip').textContent=l[1];els['ps2-menu'].querySelector('#mmEd').style.display=br?'':'none'}
 if(lay==='matchIntroV2'&&g.myTeamID>=0){var A=team(rt,g.myTeamID,br),B=team(rt,g.myOpponentId,br),e=els['ps2-vs'];e.querySelector('#vsA').src=A.logo;e.querySelector('#vsB').src=B.logo;e.querySelector('#vsAn').textContent=A.n;e.querySelector('#vsBn').textContent=B.n}
 if(cur!==id){cur=id;show(id)}
