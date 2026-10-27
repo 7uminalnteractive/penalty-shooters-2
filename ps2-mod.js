@@ -1,3 +1,4 @@
+
 /* PS2 mod: edições de times (Brasil), botão de tela cheia e painel logo+jogador. Uso pessoal. */
 (function(){
 'use strict';
@@ -89,7 +90,16 @@ drawPick()}
 function closePick(){pick=null;if(pk)pk.style.display='none'}
 function tap(lx,ly){allowUntil=Date.now()+1500;cv=document.querySelector('canvas');if(!cv)return;var r=cv.getBoundingClientRect(),x=r.left+r.width*lx/960,y=r.top+r.height*ly/540,o={bubbles:true,cancelable:true,clientX:x,clientY:y,pointerId:1,pointerType:'mouse',isPrimary:true,button:0,view:window};
 cv.dispatchEvent(new PointerEvent('pointerdown',Object.assign({buttons:1},o)));setTimeout(function(){cv.dispatchEvent(new PointerEvent('pointerup',Object.assign({buttons:0},o)))},60)}
-function proceed(){tap(840,482)}
+function proceed(){
+var rt=ir();
+if(rt&&curLay()==='matchIntroV2'&&typeof rt.goToLayout==='function'){
+  // Equivalente ao botão Próximo da tela original: libera a partida.
+  rt.globalVars.rewardAdWatched=false;
+  rt.goToLayout('ballFlight3');
+  return;
+}
+tap(840,482);
+}
 P.tap=tap;P.openPick=openPick;P.layout=curLay;P.rt=ir;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
