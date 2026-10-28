@@ -1,0 +1,13 @@
+JOGADORES 3D — INSTALAÇÃO
+
+Extraia este pacote na pasta do jogo, junto de index.html.
+Substitua ps2-mod.js e ps2-ui.js. Mantenha a pasta player3d completa.
+Abra pelo endereço do site ou servidor local (não por file://).
+Recarregue sem cache após substituir os arquivos.
+
+O módulo substitui a representação visual do cobrador e do goleiro por modelos 3D articulados. A lógica original de cobranças e campeonato continua no Construct. Nome e número são desenhados na textura do uniforme.
+Os modelos são genéricos, sem semelhança facial individual com os atletas. O molde é próprio deste modelo, não aceita diretamente qualquer PNG do PES.
+
+Verificação: renderização WebGL e testes isolados de chute, defesa, pausa, troca de jogador, redimensionamento e retorno ao menu. A partida completa não foi validada nesta execução: o navegador de teste encerrou ao iniciar o jogo original.
+
+Se o módulo ou o WebGL falhar, a representação original é preservada/restaurada. Para remover a alteração, restaure os dois arquivos JS anteriores.
