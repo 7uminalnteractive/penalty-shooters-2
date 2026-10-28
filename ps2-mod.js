@@ -71,10 +71,10 @@ var color=P.rgbArr(+String(data.kit).slice(2,4)),lum=.299*color[0]+.587*color[1]
 var isFlamengo=/flamengo/i.test(data.team),display=String(data.name||'').trim().toUpperCase();
 ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.fillStyle=isFlamengo?'#fff':ink;
 // Distribuição inspirada na parte de trás da camisa: marca, nome, número e marca inferior.
-if(isFlamengo){ctx.font='bold '+Math.max(3,h*.075)+'px Arial,sans-serif';ctx.fillText('✿ Hapvida',w*.5,h*.205,w*.49)}
-ctx.font='bold '+Math.max(3,h*.105)+'px "Arial Narrow", Impact, sans-serif';ctx.fillText(display,w*.5,h*.32,w*.65);
-ctx.font='900 '+Math.max(6,h*.39)+'px Impact, "Arial Narrow", sans-serif';ctx.fillText(String(data.number),w*.5,h*.55,w*.50);
-if(isFlamengo){ctx.font='italic bold '+Math.max(3,h*.065)+'px Arial,sans-serif';ctx.fillText('ASSIST',w*.5,h*.78,w*.42);ctx.fillText('CARD',w*.5,h*.84,w*.35)}else if(data.sponsor){ctx.font='bold '+Math.max(3,h*.08)+'px Arial,sans-serif';ctx.fillText(data.sponsor.toUpperCase(),w*.5,h*.79,w*.62)}
+if(isFlamengo){ctx.font='bold '+Math.max(3,h*.075)+'px Arial,sans-serif';ctx.fillText('✿ Hapvida',w*.5,h*.215,w*.49)}
+ctx.font='bold '+Math.max(3,h*.105)+'px "Arial Narrow", Impact, sans-serif';ctx.fillText(display,w*.5,h*(isFlamengo?.345:.32),w*.65);
+ctx.font='900 '+Math.max(6,h*(isFlamengo?.42:.39))+'px Impact, "Arial Narrow", sans-serif';ctx.fillText(String(data.number),w*.5,h*(isFlamengo?.58:.55),w*.50);
+if(isFlamengo){ctx.font='italic bold '+Math.max(3,h*.065)+'px Arial,sans-serif';ctx.fillText('ASSIST',w*.5,h*.815,w*.42);ctx.fillText('CARD',w*.5,h*.875,w*.35)}else if(data.sponsor){ctx.font='bold '+Math.max(3,h*.08)+'px Arial,sans-serif';ctx.fillText(data.sponsor.toUpperCase(),w*.5,h*.79,w*.62)}
 }catch(e){shirtCanvas.style.display='none'}}
 
 /* 3) tela de escolha dos cobradores: aparece ao tocar em NEXT na tela "A VS B", antes da partida */
