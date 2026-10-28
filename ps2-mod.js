@@ -58,7 +58,7 @@ var idx=0,k;for(k=1;k<sn;k++)if(sides[k]===who)idx++;
 var tid=who==='player'?g.myTeamID:g.myOpponentId;if(tid==null||tid<0){badge.style.display='none';return}
 var a=rt.objects.arrTeams.getFirstInstance(),name=a.getAt(tid,0),kit=a.getAt(tid,2),d=P.load().t[tid]||{},
 pl=(d.p&&d.p.length)?d.p:P.defPlayers(tid),ord=P.order(pl.length,d.k),pi=ord[idx%ord.length],pn=pl[pi],shirtNo=(d.num&&Number.isInteger(d.num[pi])&&d.num[pi]>0&&d.num[pi]<=99)?d.num[pi]:pi+1,logo=d.l||P.crestURL(kit,name),H=r.height,key=[tid,pn,shirtNo,logo.length,H|0].join('|');
-shirtData={shot:sn,who:who,name:pn,number:shirtNo,kit:kit,crest:d.l||'',sponsor:typeof d.sponsor==='string'?d.sponsor.trim().slice(0,18):''};
+shirtData={shot:sn,who:who,name:pn,number:shirtNo,kit:kit,team:String(name||''),sponsor:typeof d.sponsor==='string'?d.sponsor.trim().slice(0,18):''};
 badge.style.left=(r.left+r.width*.014)+'px';badge.style.top=(r.top+H*.968)+'px';badge.style.fontSize=(H*.046)+'px';badge.style.display='flex';
 if(key!==lastKey){lastKey=key;badge.innerHTML='<img alt="" src="'+esc(logo)+'"><span class="nm">'+esc(pn)+'</span><span class="no">'+shirtNo+'</span>'}
 }
@@ -67,8 +67,14 @@ if(key!==lastKey){lastKey=key;badge.innerHTML='<img alt="" src="'+esc(logo)+'"><
 function drawShirtDetails(){if(!shirtCanvas||!shirtCtx)return;var rt=ir(),data=shirtData,game=cv&&cv.isConnected?cv:document.querySelector('canvas:not(#ps2shirtDetails)');if(!rt||!data||!game||rt.layout.name!=='ballFlight3'||P.ovl||rt.globalVars.shotNumber!==data.shot||rt.globalVars.whoShoots!==data.who){shirtCanvas.style.display='none';return}
 try{var inst=rt.objects.shooterShirt.getAllInstances().find(function(x){return x.isVisible&&x.opacity>0});if(!inst||!inst.layer){shirtCanvas.style.display='none';return}var rect=game.getBoundingClientRect();if(!rect.width||!rect.height)return;var ratio=Math.min(window.devicePixelRatio||1,2),cw=Math.round(rect.width*ratio),ch=Math.round(rect.height*ratio);if(shirtCanvas.width!==cw)shirtCanvas.width=cw;if(shirtCanvas.height!==ch)shirtCanvas.height=ch;shirtCanvas.style.left=rect.left+'px';shirtCanvas.style.top=rect.top+'px';shirtCanvas.style.width=rect.width+'px';shirtCanvas.style.height=rect.height+'px';shirtCanvas.style.display='block';var ctx=shirtCtx;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cw,ch);
 var w=inst.width,h=inst.height;if(!w||!h){shirtCanvas.style.display='none';return}var angle=inst.angle||0,cos=Math.cos(angle),sin=Math.sin(angle),left=-inst.originX*w,top=-inst.originY*h;function project(dx,dy){return inst.layer.layerToCssPx(inst.x+dx*cos-dy*sin,inst.y+dx*sin+dy*cos)}var p0=project(left,top),px=project(left+w,top),py=project(left,top+h);ctx.setTransform((px[0]-p0[0])*ratio/w,(px[1]-p0[1])*ratio/w,(py[0]-p0[0])*ratio/h,(py[1]-p0[1])*ratio/h,(p0[0]-rect.left)*ratio,(p0[1]-rect.top)*ratio);
-var color=P.rgbArr(+String(data.kit).slice(2,4)),lum=.299*color[0]+.587*color[1]+.114*color[2],ink=lum>180?'#111':'#fff',outline=lum>180?'rgba(255,255,255,.85)':'rgba(0,0,0,.85)';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.fillStyle=ink;ctx.strokeStyle=outline;ctx.lineWidth=Math.max(.6,h*.025);var display=String(data.name||'').trim().toUpperCase();ctx.font='bold '+Math.max(3,h*.105)+'px Arial,sans-serif';ctx.strokeText(display,w*.50,h*.31,w*.66);ctx.fillText(display,w*.50,h*.31,w*.66);ctx.font='900 '+Math.max(6,h*.30)+'px Arial,sans-serif';ctx.strokeText(String(data.number),w*.50,h*.54,w*.48);ctx.fillText(String(data.number),w*.50,h*.54,w*.48);
-if(data.sponsor){ctx.font='bold '+Math.max(3,h*.08)+'px Arial,sans-serif';ctx.strokeText(data.sponsor.toUpperCase(),w*.5,h*.78,w*.62);ctx.fillText(data.sponsor.toUpperCase(),w*.5,h*.78,w*.62)}if(data.crest){if(crestSrc!==data.crest){crestSrc=data.crest;crestImage.src=crestSrc}if(crestImage.complete&&crestImage.naturalWidth)ctx.drawImage(crestImage,w*.69,h*.18,w*.13,h*.14)}
+var color=P.rgbArr(+String(data.kit).slice(2,4)),lum=.299*color[0]+.587*color[1]+.114*color[2],ink=lum>180?'#111':'#fff';
+var isFlamengo=/flamengo/i.test(data.team),display=String(data.name||'').trim().toUpperCase();
+ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.fillStyle=isFlamengo?'#fff':ink;
+// Distribuição inspirada na parte de trás da camisa: marca, nome, número e marca inferior.
+if(isFlamengo){ctx.font='bold '+Math.max(3,h*.075)+'px Arial,sans-serif';ctx.fillText('✿ Hapvida',w*.5,h*.205,w*.49)}
+ctx.font='bold '+Math.max(3,h*.105)+'px "Arial Narrow", Impact, sans-serif';ctx.fillText(display,w*.5,h*.32,w*.65);
+ctx.font='900 '+Math.max(6,h*.39)+'px Impact, "Arial Narrow", sans-serif';ctx.fillText(String(data.number),w*.5,h*.55,w*.50);
+if(isFlamengo){ctx.font='italic bold '+Math.max(3,h*.065)+'px Arial,sans-serif';ctx.fillText('ASSIST',w*.5,h*.78,w*.42);ctx.fillText('CARD',w*.5,h*.84,w*.35)}else if(data.sponsor){ctx.font='bold '+Math.max(3,h*.08)+'px Arial,sans-serif';ctx.fillText(data.sponsor.toUpperCase(),w*.5,h*.79,w*.62)}
 }catch(e){shirtCanvas.style.display='none'}}
 
 /* 3) tela de escolha dos cobradores: aparece ao tocar em NEXT na tela "A VS B", antes da partida */
