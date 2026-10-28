@@ -83,7 +83,7 @@ try{o.bigTextShotAnnouncement.getAllInstances().forEach(function(x){if(/TURN/i.t
 /* Usa a posição do controle original para selecionar qualquer clube da lista. */
 function selectTeam(uid){var token=++teamSelectToken,el=els['ps2-teams'],status=el.querySelector('#teamStatus');chosenTeam='';lastTeamScan=0;el.querySelector('#teamContinue').disabled=true;status.textContent='Selecionando time...';
 function step(attempt){var rt=P.rt();if(token!==teamSelectToken||!rt||rt.layout.name!=='teamPick')return;var inst=rt.objects.TeamButton.getAllInstances().find(function(v){return String(v.uid)===uid});if(!inst){status.textContent='Não foi possível selecionar. Tente novamente.';return}
-var cv=document.querySelector('canvas').getBoundingClientRect(),q=inst.layer.layerToCssPx(inst.x+inst.width*.48,inst.y+inst.height*.3),x=(q[0]-cv.left)/cv.width*960,y=(q[1]-cv.top)/cv.height*540;
+var cv=document.querySelector('canvas:not(#ps2shirtDetails)').getBoundingClientRect(),q=inst.layer.layerToCssPx(inst.x+inst.width*.48,inst.y+inst.height*.3),x=(q[0]-cv.left)/cv.width*960,y=(q[1]-cv.top)/cv.height*540;
 if(x<80||x>880){if(attempt>=4){status.textContent='Não foi possível selecionar. Tente novamente.';return}P.tap(x<80?34:926,294);setTimeout(function(){step(attempt+1)},900);return}
 P.tap(x,y);setTimeout(function(){var current=P.rt();if(token!==teamSelectToken||!current||current.layout.name!=='teamPick')return;if(+current.globalVars.myTeamID!==+inst.instVars.teambuttonID){status.textContent='Não foi possível selecionar. Tente novamente.';return}chosenTeam=uid;status.textContent='Time selecionado.';lastTeamScan=0;drawTeams()},250)}
 step(0)}
@@ -118,7 +118,7 @@ if(lay==='mainMenu'){var l=LG[g.leagueNum]||['Liga','—'];els['ps2-menu'].query
 if(lay==='matchIntroV2'&&g.myTeamID>=0){var A=team(rt,g.myTeamID,br),B=team(rt,g.myOpponentId,br),e=els['ps2-vs'];e.querySelector('#vsA').src=A.logo;e.querySelector('#vsB').src=B.logo;e.querySelector('#vsAn').textContent=A.n;e.querySelector('#vsBn').textContent=B.n}
 if(cur!==id){cur=id;show(id)}
 /* placar */
-var cv=document.querySelector('canvas');if(!cv)return;
+var cv=document.querySelector('canvas:not(#ps2shirtDetails)');if(!cv)return;
 if(lay!=='ballFlight3'||g.myTeamID<0){els.ps2pauseBtn.style.display='none';if(pauseOpen){rt.timeScale=pauseScale;pauseOpen=false}els.ps2sb.style.display='none';oldHide=false;whoAt=[];lastSn=0;return}
 oldHide=true;
 var r=cv.getBoundingClientRect(),pb=els.ps2pauseBtn;pb.style.display=pauseOpen?'none':'block';var ps=Math.max(30,Math.min(46,r.height*.085,r.width*.075));pb.style.width=pb.style.height=ps+'px';pb.style.left=(r.left+Math.max(8,r.width*.018))+'px';pb.style.top=(r.top+Math.max(8,r.height*.055))+'px';var sn=g.shotNumber,who=g.whoShoots;if(sn<lastSn)whoAt=[];lastSn=sn;if(sn>0)whoAt[sn]=who;
