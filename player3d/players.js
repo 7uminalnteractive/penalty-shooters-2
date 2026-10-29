@@ -73,9 +73,51 @@ const idle=clipsGlb.animations.find(c=>c.name==='movement/idle/000_idlelevel1');
 const shot=clipsGlb.animations.find(c=>c.name==='shot/idle/020');
 const ready=clipsGlb.animations.find(c=>c.name==='deflect/idle/000_trunk_holdball');
 const keeperClips={Idle:ready,MidCatch:clipsGlb.animations.find(c=>c.name==='deflect/idle/000_trunk_holdball'),LowCatch:clipsGlb.animations.find(c=>c.name==='deflect/idle/000_ground_holdball'),HighCatch:clipsGlb.animations.find(c=>c.name==='deflect/idle/000_high_holdball'),MidParade:clipsGlb.animations.find(c=>c.name==='deflect/idle/090_midheight_deflect_far'),HighParade:clipsGlb.animations.find(c=>c.name==='deflect/idle/090_high_deflect_far')};
-function actor(){const model=clone(clipsGlb.scene),rig=new THREE.Group();rig.add(model);scene.add(rig);const mats=[];model.traverse(o=>{if(!o.isMesh)return;o.frustumCulled=false;o.material=o.material.clone();o.material.roughness=.92;if(['kit','hands'].includes(o.material.name))mats.push(o.material)});const mixer=new THREE.AnimationMixer(model);const box=new THREE.Box3().setFromObject(model);return {rig,model,mats,mixer,height:1.8,key:'',texture:null,action:null,clip:null,frame:0};}
+function actor(){const model=clone(clipsGlb.scene),rig=new THREE.Group();rig.add(model);scene.add(rig);const mats=[];model.traverse(o=>{if(!o.isMesh)return;o.frustumCulled=false;o.material=o.material.clone();o.material.roughness=.92;if(['kit','hands'].includes(o.material.name))mats.push(o.material)});const bones=[],boneMap={};model.traverse(o=>{if(o.isBone){bones.push(o);boneMap[o.name]=o}});const mixer=new THREE.AnimationMixer(model);const box=new THREE.Box3().setFromObject(model);return {rig,model,mats,mixer,bones,boneMap,height:1.8,key:'',texture:null,action:null,clip:null,frame:0};}
 const shooter=actor(),keeper=actor();
-function animate(a,clip,t){if(!clip)return;if(a.clip!==clip){a.mixer.stopAllAction();a.action=a.mixer.clipAction(clip);a.action.play();a.clip=clip}a.action.time=Math.max(0,Math.min(clip.duration-.001,t));a.mixer.update(0)}
+// Keep the kick contact aligned with Construct's "Kick" signal (frame 42).
+function kickClipTime(frame,duration) {
+  const start=18,contact=42,end=54,hit=Math.min(.50,duration*.9);
+  if(frame<=start)return 0;
+  if(frame<=contact)return (frame-start)/(contact-start)*hit;
+  return Math.min(duration,(hit+(frame-contact)/(end-contact)*(duration-hit)));
+}
+function keeperMirror(width){return width<0?-1:1}
+function animate(a,clip,t,dt=0) {
+  if(!clip)return;
+  if(a.clip!==clip){
+    a.transition=a.clip?a.bones.map(b=>({q:b.quaternion.clone(),p:b.position.clone()})):null;
+    a.blendTime=0;
+    a.mixer.stopAllAction();
+    a.action=a.mixer.clipAction(clip);a.action.reset().play();a.clip=clip;
+  }
+  // The mixer skips writes for unchanged tracks; restore the unblended pose
+  // before sampling so additive breathing and blending cannot accumulate.
+  if(a.rawPose)a.bones.forEach((b,i)=>{b.quaternion.copy(a.rawPose[i].q);b.position.copy(a.rawPose[i].p)});
+  a.action.time=Math.max(0,Math.min(clip.duration-.001,t));
+  a.mixer.update(0);
+  for(const b of a.bones)b.quaternion.normalize();
+  if(!a.rawPose)a.rawPose=a.bones.map(b=>({q:b.quaternion.clone(),p:b.position.clone()}));
+  else a.bones.forEach((b,i)=>{a.rawPose[i].q.copy(b.quaternion);a.rawPose[i].p.copy(b.position)});
+  if(a.transition){
+    a.blendTime+=dt;
+    const u=Math.min(1,a.blendTime/.10),weight=u*u*(3-2*u);
+    a.bones.forEach((b,i)=>{b.quaternion.slerp(a.transition[i].q,1-weight);b.position.lerp(a.transition[i].p,1-weight)});
+    if(u===1)a.transition=null;
+  }
+}
+function idleMotion(a,time,isKeeper){
+  // Small additive motion on a fresh sampled pose: no cumulative bone drift.
+  const breath=Math.sin(time*2.1),sway=Math.sin(time*1.3);
+  const body=a.boneMap.body,middle=a.boneMap.middle;
+  if(body)body.rotateX((isKeeper?.018:.007)*breath);
+  if(middle)middle.rotateY((isKeeper?.015:.006)*sway);
+  if(isKeeper){
+    const l=a.boneMap.left_shoulder,r=a.boneMap.right_shoulder;
+    if(l)l.rotateY(.015*breath);
+    if(r)r.rotateY(-.015*breath);
+  }
+}
 function rgb(i){return 'rgb('+P.rgbArr(i).join(',')+')'}
 function kit(a,data,gk){const key=JSON.stringify([data.kit,data.name,data.number,data.team,gk,data.crest]);if(a.key===key)return;a.key=key;const c=document.createElement('canvas');c.width=c.height=1024;const g=c.getContext('2d'),code=String(data.kit||'03000000');const flam=/flamengo/i.test(data.team),primary=gk?'#167e93':rgb(+code.slice(2,4)),secondary=flam?'#111':rgb(+code.slice(4,6));g.fillStyle='#17191d';g.fillRect(0,0,1024,1024);g.fillStyle=primary;g.fillRect(0,0,1024,407);
 if(!gk&&(flam||+code.slice(0,2)!==3)){g.fillStyle=secondary;if(flam||[2,4,5,8].includes(+code.slice(0,2))){for(let y=0;y<407;y+=102)g.fillRect(0,y,1024,50)}else{for(let x=0;x<1024;x+=100)g.fillRect(x,0,48,407)}}
@@ -153,12 +195,17 @@ const ball=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),new THREE.MeshStanda
 // Dark seams on the ball share its rotation.
 for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.995,.025,4,48),new THREE.MeshStandardMaterial({color:'#151719'}));ring.rotation.set(i===0?Math.PI/2:0,i===1?Math.PI/2:0,0);ball.add(ring)}
 let width=0,height=0,last=performance.now(),idleTime=0,failed=false,editsCache={},editsAt=0,kitAt=0;
-function position(a,i,rect,gk){const sx=Math.abs(i.width/i.imageWidth),sy=Math.abs(i.height/i.imageHeight);const point=i.layer.layerToCssPx(i.x+(gk?0:-47)*sx,i.y+(gk?66:145)*sy),base=i.layer.layerToCssPx(i.x,i.y),up=i.layer.layerToCssPx(i.x,i.y-(gk?116:262)*sy);const h=Math.hypot(up[0]-base[0],up[1]-base[1]);a.rig.scale.setScalar(h/a.height);a.rig.position.set(point[0]-rect.left,rect.height-(point[1]-rect.top),gk?0:150);a.rig.rotation.y=gk?0:Math.PI;a.rig.visible=i.isVisible&&i.layer.isVisible!==false;}
+function position(a,i,rect,gk){const sx=Math.abs(i.width/i.imageWidth),sy=Math.abs(i.height/i.imageHeight);const point=i.layer.layerToCssPx(i.x+(gk?0:-47)*sx,i.y+(gk?66:145)*sy),base=i.layer.layerToCssPx(i.x,i.y),up=i.layer.layerToCssPx(i.x,i.y-(gk?116:262)*sy);const h=Math.hypot(up[0]-base[0],up[1]-base[1]);a.rig.scale.setScalar(h/a.height);if(gk)a.rig.scale.x*=keeperMirror(i.width);a.rig.position.set(point[0]-rect.left,rect.height-(point[1]-rect.top),gk?0:150);a.rig.rotation.y=gk?0:Math.PI;a.rig.visible=i.isVisible&&i.layer.isVisible!==false;}
 function render(now){requestAnimationFrame(render);if(failed)return;let rt,layout;try{rt=window.c3_runtimeInterface?._localRuntime?.GetIRuntime();layout=rt?.layout?.name}catch{}const game=document.querySelector('canvas:not(#ps2shirtDetails):not(#ps2players3d)');if(!rt||!game||layout!=='ballFlight3'||P.ovl){canvas.style.display='none';restore();P.players3dActive=false;last=now;return}try{const s=all(rt,'Shooter')[0],k=all(rt,'goalkeeperNoShirt')[0];if(!s||!k){canvas.style.display='none';restore();P.players3dActive=false;return;}const r=game.getBoundingClientRect();if(!r.width||!r.height){canvas.style.display='none';restore();P.players3dActive=false;return;}if(width!==r.width||height!==r.height){width=r.width;height=r.height;renderer.setSize(width,height,false);camera.right=width;camera.top=height;camera.updateProjectionMatrix()}canvas.style.left=r.left+'px';canvas.style.top=r.top+'px';canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';
 const dt=Math.min((now-last)/1000,.05)*(rt.timeScale||0);last=now;idleTime+=dt;const g=rt.globalVars,arr=rt.objects.arrTeams?.getFirstInstance(),tid=g.whoShoots==='player'?g.myTeamID:g.myOpponentId,kid=g.whoShoots==='player'?g.myOpponentId:g.myTeamID;if(now-editsAt>500){editsCache=g.leagueNum===5?P.load().t:{};editsAt=now}const edits=editsCache;const sd=edits[tid]||{},kd=edits[kid]||{};const sd3=g.leagueNum===5&&P.playerAppearance&&P.playerAppearance.shot===g.shotNumber&&P.playerAppearance.who===g.whoShoots?P.playerAppearance:{name:sd.p?.[0]||'',number:sd.num?.[0]||9,kit:arr?.getAt(tid,2),team:arr?.getAt(tid,0),crest:sd.l||''};if(now-kitAt>120){kitAt=now;kit(shooter,sd3,false);kit(keeper,{kit:arr?.getAt(kid,2),team:arr?.getAt(kid,0),number:1,name:kd.p?.[kd.p.length-1]||''},true);}
 position(shooter,s,r,false);position(keeper,k,r,true);
-const sf=s.animationFrame;if(sf<20){animate(shooter,idle,idleTime%idle.duration)}else{animate(shooter,shot,(sf-20)/34*shot.duration)}
-const kc=keeperClips[k.animationName]||idle;animate(keeper,kc,kc===ready&&k.animationName==='Idle'?0.015:kc===idle?idleTime%kc.duration:(k.animationFrame/({MidCatch:8,LowCatch:31,HighCatch:10,MidParade:46,HighParade:48}[k.animationName]||153))*kc.duration);
+const sf=s.animationFrame;
+if(sf<18){animate(shooter,idle,(idleTime*.15)%idle.duration,dt);idleMotion(shooter,idleTime,false)}else{animate(shooter,shot,kickClipTime(sf,shot.duration),dt)}
+const keeperIdle=k.animationName==='Idle'||k.animationName==='Default';
+const kc=keeperIdle?ready:(keeperClips[k.animationName]||idle);
+const frameCount={MidCatch:8,LowCatch:31,HighCatch:10,MidParade:46,HighParade:48}[k.animationName]||153;
+animate(keeper,kc,keeperIdle?0.015:(k.animationFrame/(frameCount-1))*kc.duration,dt);
+if(keeperIdle)idleMotion(keeper,idleTime,true);
 const legacyInstances=new Set();for(const n of visualNames)for(const i of all(rt,n))legacyInstances.add(i);
 const b=all(rt,'ball')[0];ball.visible=!!b?.isVisible;if(b&&ball.visible){const bp=b.layer.layerToCssPx(b.x+(0.5-b.originX)*b.width,b.y+(0.5-b.originY)*b.height),edge=b.layer.layerToCssPx(b.x+(0.5-b.originX)*b.width+Math.abs(b.width)/2,b.y+(0.5-b.originY)*b.height);ball.position.set(bp[0]-r.left,r.height-(bp[1]-r.top),80);ball.scale.setScalar(Math.max(1,Math.hypot(edge[0]-bp[0],edge[1]-bp[1])));ball.rotation.x+=dt*7;legacyInstances.add(b)}
 legacyMask.update(legacyInstances);renderer.render(scene,camera);canvas.style.display='block';P.players3dActive=true;
