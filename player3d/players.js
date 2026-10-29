@@ -1,3 +1,4 @@
+
 // Player rendering integration. Assets/rig conversion: see LICENSES.txt.
 import * as THREE from './three.module.js';
 import {GLTFLoader} from './GLTFLoader.js';
@@ -84,22 +85,83 @@ if(flam&&!gk){g.font='bold 23px Arial';g.fillText('Hapvida',768,80,150);g.font='
 const tex=new THREE.CanvasTexture(c);tex.flipY=false;tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());if(a.texture)a.texture.dispose();a.texture=tex;for(const m of a.mats){m.map=tex;m.color.set(0xffffff);m.needsUpdate=true}
 if(data.crest&&!gk){const im=new Image();im.onload=()=>{if(a.texture!==tex)return;g.drawImage(im,294,110,40,50);tex.needsUpdate=true};im.src=data.crest}
 }
-const hidden=new Map();function hide(i){if(!hidden.has(i))hidden.set(i,i.opacity);if(i.opacity>0)hidden.set(i,i.opacity);i.opacity=0}function restore(){for(const [i,o]of hidden)try{i.opacity=o}catch{}hidden.clear()}
+// Hide the legacy sprites only while Construct draws their own layer.
+// Event sheets can change visibility/opacity freely between rendered frames.
+function createLegacyMask(isActive) {
+  const layers=new Map();
+  function restoreEntry(entry) {
+    for(const [instance,state] of entry.saved) {
+      try { instance.isVisible=state.visible; instance.opacity=state.opacity; } catch {}
+    }
+    entry.saved.clear();
+  }
+  return {
+    update(instances) {
+      const wanted=new Map();
+      for(const instance of instances) {
+        const layer=instance.layer;
+        if(!layer||typeof layer.addEventListener!=='function') throw new Error('Camada sem eventos de desenho');
+        if(!wanted.has(layer)) wanted.set(layer,new Set());
+        wanted.get(layer).add(instance);
+      }
+      for(const [layer,entry] of layers) if(!wanted.has(layer)) {
+        restoreEntry(entry);
+        layer.removeEventListener('beforedraw',entry.before);
+        layer.removeEventListener('afterdraw',entry.after);
+        layers.delete(layer);
+      }
+      for(const [layer,instances] of wanted) {
+        let entry=layers.get(layer);
+        if(!entry) {
+          entry={instances,saved:new Map()};
+          entry.before=()=>{
+            restoreEntry(entry);
+            if(!isActive()) return;
+            for(const instance of entry.instances) {
+              try {
+                entry.saved.set(instance,{visible:instance.isVisible,opacity:instance.opacity});
+                instance.isVisible=false;
+                instance.opacity=0;
+              } catch {}
+            }
+          };
+          entry.after=()=>restoreEntry(entry);
+          layer.addEventListener('beforedraw',entry.before);
+          layer.addEventListener('afterdraw',entry.after);
+          layers.set(layer,entry);
+        }
+        entry.instances=instances;
+      }
+    },
+    clear() {
+      for(const [layer,entry] of layers) {
+        restoreEntry(entry);
+        try {
+          layer.removeEventListener('beforedraw',entry.before);
+          layer.removeEventListener('afterdraw',entry.after);
+        } catch {}
+      }
+      layers.clear();
+    }
+  };
+}
+const legacyMask=createLegacyMask(()=>!failed&&P.players3dActive&&!P.ovl);
+function restore(){legacyMask.clear()}
 function all(rt,n){return rt.objects[n]?.getAllInstances()||[]}
-const visualNames=['Shooter','shooterShirt','shooterShorts','Stripes','shirtAlt','goalkeeperNoShirt','goalkeeperShirtOrange','goalkeeperShirtCyan'];
+const visualNames=['ShooterComplete','GoalkeeperComplete','strikerOwnShadow','Shooter','shooterShirt','shooterShorts','Stripes','shirtAlt','goalkeeperNoShirt','goalkeeperShirtOrange','goalkeeperShirtCyan'];
 const ball=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),new THREE.MeshStandardMaterial({color:'#fafafa',roughness:.9}));scene.add(ball);
 // Dark seams on the ball share its rotation.
 for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.995,.025,4,48),new THREE.MeshStandardMaterial({color:'#151719'}));ring.rotation.set(i===0?Math.PI/2:0,i===1?Math.PI/2:0,0);ball.add(ring)}
 let width=0,height=0,last=performance.now(),idleTime=0,failed=false,editsCache={},editsAt=0,kitAt=0;
 function position(a,i,rect,gk){const sx=Math.abs(i.width/i.imageWidth),sy=Math.abs(i.height/i.imageHeight);const point=i.layer.layerToCssPx(i.x+(gk?0:-47)*sx,i.y+(gk?66:145)*sy),base=i.layer.layerToCssPx(i.x,i.y),up=i.layer.layerToCssPx(i.x,i.y-(gk?116:262)*sy);const h=Math.hypot(up[0]-base[0],up[1]-base[1]);a.rig.scale.setScalar(h/a.height);a.rig.position.set(point[0]-rect.left,rect.height-(point[1]-rect.top),gk?0:150);a.rig.rotation.y=gk?0:Math.PI;a.rig.visible=i.isVisible&&i.layer.isVisible!==false;}
-function render(now){requestAnimationFrame(render);if(failed)return;let rt,layout;try{rt=window.c3_runtimeInterface?._localRuntime?.GetIRuntime();layout=rt?.layout?.name}catch{}const game=document.querySelector('canvas:not(#ps2shirtDetails):not(#ps2players3d)');if(!rt||!game||layout!=='ballFlight3'||P.ovl){canvas.style.display='none';restore();P.players3dActive=false;last=now;return}try{const s=all(rt,'Shooter')[0],k=all(rt,'goalkeeperNoShirt')[0];if(!s||!k)return;const r=game.getBoundingClientRect();if(!r.width||!r.height)return;if(width!==r.width||height!==r.height){width=r.width;height=r.height;renderer.setSize(width,height,false);camera.right=width;camera.top=height;camera.updateProjectionMatrix()}canvas.style.left=r.left+'px';canvas.style.top=r.top+'px';canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';
+function render(now){requestAnimationFrame(render);if(failed)return;let rt,layout;try{rt=window.c3_runtimeInterface?._localRuntime?.GetIRuntime();layout=rt?.layout?.name}catch{}const game=document.querySelector('canvas:not(#ps2shirtDetails):not(#ps2players3d)');if(!rt||!game||layout!=='ballFlight3'||P.ovl){canvas.style.display='none';restore();P.players3dActive=false;last=now;return}try{const s=all(rt,'Shooter')[0],k=all(rt,'goalkeeperNoShirt')[0];if(!s||!k){canvas.style.display='none';restore();P.players3dActive=false;return;}const r=game.getBoundingClientRect();if(!r.width||!r.height){canvas.style.display='none';restore();P.players3dActive=false;return;}if(width!==r.width||height!==r.height){width=r.width;height=r.height;renderer.setSize(width,height,false);camera.right=width;camera.top=height;camera.updateProjectionMatrix()}canvas.style.left=r.left+'px';canvas.style.top=r.top+'px';canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';
 const dt=Math.min((now-last)/1000,.05)*(rt.timeScale||0);last=now;idleTime+=dt;const g=rt.globalVars,arr=rt.objects.arrTeams?.getFirstInstance(),tid=g.whoShoots==='player'?g.myTeamID:g.myOpponentId,kid=g.whoShoots==='player'?g.myOpponentId:g.myTeamID;if(now-editsAt>500){editsCache=g.leagueNum===5?P.load().t:{};editsAt=now}const edits=editsCache;const sd=edits[tid]||{},kd=edits[kid]||{};const sd3=g.leagueNum===5&&P.playerAppearance&&P.playerAppearance.shot===g.shotNumber&&P.playerAppearance.who===g.whoShoots?P.playerAppearance:{name:sd.p?.[0]||'',number:sd.num?.[0]||9,kit:arr?.getAt(tid,2),team:arr?.getAt(tid,0),crest:sd.l||''};if(now-kitAt>120){kitAt=now;kit(shooter,sd3,false);kit(keeper,{kit:arr?.getAt(kid,2),team:arr?.getAt(kid,0),number:1,name:kd.p?.[kd.p.length-1]||''},true);}
 position(shooter,s,r,false);position(keeper,k,r,true);
 const sf=s.animationFrame;if(sf<20){animate(shooter,idle,idleTime%idle.duration)}else{animate(shooter,shot,(sf-20)/34*shot.duration)}
 const kc=keeperClips[k.animationName]||idle;animate(keeper,kc,kc===ready&&k.animationName==='Idle'?0.015:kc===idle?idleTime%kc.duration:(k.animationFrame/({MidCatch:8,LowCatch:31,HighCatch:10,MidParade:46,HighParade:48}[k.animationName]||153))*kc.duration);
-for(const n of visualNames)for(const i of all(rt,n))hide(i);
-const b=all(rt,'ball')[0];ball.visible=!!b?.isVisible;if(b&&ball.visible){const bp=b.layer.layerToCssPx(b.x+(0.5-b.originX)*b.width,b.y+(0.5-b.originY)*b.height),edge=b.layer.layerToCssPx(b.x+Math.abs(b.width)/2,b.y);ball.position.set(bp[0]-r.left,r.height-(bp[1]-r.top),80);ball.scale.setScalar(Math.max(1,Math.hypot(edge[0]-bp[0],edge[1]-bp[1])));ball.rotation.x+=dt*7;hide(b)}
-renderer.render(scene,camera);canvas.style.display='block';P.players3dActive=true;
+const legacyInstances=new Set();for(const n of visualNames)for(const i of all(rt,n))legacyInstances.add(i);
+const b=all(rt,'ball')[0];ball.visible=!!b?.isVisible;if(b&&ball.visible){const bp=b.layer.layerToCssPx(b.x+(0.5-b.originX)*b.width,b.y+(0.5-b.originY)*b.height),edge=b.layer.layerToCssPx(b.x+(0.5-b.originX)*b.width+Math.abs(b.width)/2,b.y+(0.5-b.originY)*b.height);ball.position.set(bp[0]-r.left,r.height-(bp[1]-r.top),80);ball.scale.setScalar(Math.max(1,Math.hypot(edge[0]-bp[0],edge[1]-bp[1])));ball.rotation.x+=dt*7;legacyInstances.add(b)}
+legacyMask.update(legacyInstances);renderer.render(scene,camera);canvas.style.display='block';P.players3dActive=true;
 }catch(e){failed=true;restore();canvas.style.display='none';P.players3dActive=false;console.error('PS2 3D desativado:',e)}}
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();failed=true;restore();canvas.style.display='none';P.players3dActive=false});
 P.players3d={shooter,keeper,renderer,scene,camera};requestAnimationFrame(render);
