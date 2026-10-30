@@ -30,7 +30,7 @@ Object.defineProperty(XMLHttpRequest.prototype,'responseText',{configurable:true
 Object.defineProperty(XMLHttpRequest.prototype,'response',{configurable:true,get:function(){var v=dR.get.call(this);if(!(this.__ps2>=0&&this.readyState===4))return v;if(typeof v==='string')return fix(v,this.__ps2);if(v&&typeof v==='object')return JSON.parse(fix(JSON.stringify(v),this.__ps2));return v}});
 /* 2) interface sobre o jogo */
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-var cv,badge,fsb,edb,lastKey='',sides=[],lastSn=0,hideOn=false,css=document.createElement('style');
+var cv,badge,fsb,edb,lastKey='',sides=[],lastSn=0,hideOn=false,keeperShirt=null,css=document.createElement('style');
 css.textContent='#ps2badge{position:fixed;z-index:20;display:none;align-items:center;height:1.5em;padding:0 0 0 2.15em;border-radius:999px;background:rgba(25,60,15,.8);color:#fff;font-family:"Roboto Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;font-weight:700;font-stretch:condensed;letter-spacing:.02em;text-transform:uppercase;line-height:1;pointer-events:none;white-space:nowrap;transform:translateY(-100%);box-shadow:0 .08em .25em rgba(0,0,0,.35)}#ps2badge img{position:absolute;left:-.3em;top:50%;height:2.05em;width:2.05em;transform:translateY(-50%);object-fit:contain;filter:drop-shadow(0 .05em .1em rgba(0,0,0,.5))}#ps2badge .nm{padding-right:.7em}#ps2badge .no{align-self:stretch;display:flex;align-items:center;justify-content:center;min-width:1.9em;padding:0 .5em;border-radius:0 999px 999px 0;background:#8fd11e;color:#fff;text-shadow:0 .04em .08em rgba(0,0,0,.35)}.ps2btn{position:fixed;z-index:60;border:0;border-radius:50%;background:rgba(10,30,15,.55);color:#fff;display:none;align-items:center;justify-content:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}.ps2pill{border-radius:999px;font:700 14px Arial,sans-serif;padding:8px 16px;width:auto;height:auto;text-decoration:none;background:rgba(10,30,15,.7);color:#fff}';
 function boot(){
 document.head.appendChild(css);
@@ -47,6 +47,7 @@ P.loadColors();setInterval(tick,120);
 (function raf(){if(hideOn){var r=ir();try{r.objects.midText.getAllInstances().forEach(function(i){if(i.x<430&&i.y>380&&i.y<430&&(/^POINTS/i.test(i.text)||/^[0-9]+$/.test(String(i.text).trim()))){i.isVisible=false;i.opacity=0}})}catch(e){}}requestAnimationFrame(raf)})();
 }
 function ir(){try{return c3_runtimeInterface._localRuntime.GetIRuntime()}catch(e){return null}}
+function goalkeeperShirt(rt,isKeeper){try{var obj=rt.objects.shooterShirt,shirt=obj&&obj.getFirstInstance();if(keeperShirt&&(!isKeeper||keeperShirt.shirt!==shirt)){var effect=keeperShirt.effect,current=effect.getParameter(0),cyan=keeperShirt.color;if(current&&current.every(function(v,i){return Math.abs(v-cyan[i])<0.005}))effect.setParameter(0,keeperShirt.original);keeperShirt=null}if(!isKeeper||!shirt)return;var fx=(shirt.effects||[]).find(function(e){return String(e.name).toLowerCase()==='setcolor'});if(!fx)return;if(!keeperShirt)keeperShirt={shirt:shirt,effect:fx,original:fx.getParameter(0).slice(),color:[0.05,0.83,0.75]};fx.isActive=true;fx.setParameter(0,keeperShirt.color)}catch(e){keeperShirt=null}}
 function tick(){
 cv=cv&&cv.isConnected?cv:document.querySelector('canvas:not(#ps2shirtDetails):not(#ps2players3d)');if(!cv)return;
 var r=cv.getBoundingClientRect(),w=r.width,can=!!(document.fullscreenEnabled||document.webkitFullscreenEnabled),sz=Math.max(34,w*.062);
@@ -55,13 +56,14 @@ var rt=ir();if(!rt){badge.style.display='none';edb.style.display='none';return}
 var lay='',g=rt.globalVars;try{lay=rt.layout.name}catch(e){}
 var br=g.leagueNum===LG;
 edb.style.display=(br&&lay==='mainMenu'&&!P.noEdb)?'inline-flex':'none';edb.style.left=(r.left+w/2)+'px';edb.style.top=(r.top+r.height*.93)+'px';edb.style.transform='translate(-50%,-50%)';
-if(lay!=='ballFlight3'){badge.style.display='none';hideOn=false;sides=[];lastSn=0;return}
+if(lay!=='ballFlight3'){goalkeeperShirt(rt,false);badge.style.display='none';hideOn=false;sides=[];lastSn=0;return}
 hideOn=true;
 var sn=g.shotNumber,who=g.whoShoots;if(sn<lastSn)sides=[];lastSn=sn;if(sn>0)sides[sn]=who;
 var idx=0,k;for(k=1;k<sn;k++)if(sides[k]===who)idx++;
 var tid=who==='player'?g.myTeamID:g.myOpponentId;if(tid==null||tid<0){badge.style.display='none';return}
 var a=rt.objects.arrTeams.getFirstInstance(),name=a.getAt(tid,0),kit=a.getAt(tid,2),d=P.load().t[tid]||{},
-pl=P.roster(tid,d).players,ord=P.order(pl.length,d.k),pi=ord[idx%ord.length],pn=pl[pi],shirtNo=(d.num&&Number.isInteger(d.num[pi])&&d.num[pi]>0&&d.num[pi]<=99)?d.num[pi]:pi+1,logo=d.l||P.crestURL(kit,name),H=r.height,key=[tid,pn,shirtNo,logo.length,H|0].join('|');
+roster=P.roster(tid,d),pl=roster.players,ord=P.order(pl.length,d.k),pi=ord[idx%ord.length],pn=pl[pi],shirtNo=(d.num&&Number.isInteger(d.num[pi])&&d.num[pi]>0&&d.num[pi]<=99)?d.num[pi]:pi+1,logo=d.l||P.crestURL(kit,name),H=r.height,key=[tid,pn,shirtNo,logo.length,H|0].join('|');
+var isKeeper=!!(roster.profiles[pi]&&String(roster.profiles[pi].position||'').toLowerCase()==='goleiro');goalkeeperShirt(rt,isKeeper);
 P.playerAppearance={shot:sn,who:who,name:pn,number:shirtNo,kit:kit,team:String(name||''),sponsor:typeof d.sponsor==='string'?d.sponsor.trim().slice(0,18):''};
 badge.style.left=(r.left+r.width*.014)+'px';badge.style.top=(r.top+H*.968)+'px';badge.style.fontSize=(H*.046)+'px';badge.style.display='flex';
 if(key!==lastKey){lastKey=key;badge.innerHTML='<img alt="" src="'+esc(logo)+'"><span class="nm">'+esc(pn)+'</span><span class="no">'+shirtNo+'</span>'}
