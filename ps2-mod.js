@@ -1,3 +1,4 @@
+
 /* PS2 mod: edições de times (Brasil), botão de tela cheia e painel logo+jogador. Uso pessoal. */
 (function(){
 'use strict';
@@ -27,7 +28,6 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return
 var cv,badge,fsb,edb,shirtCanvas,shirtCtx,shirtData=null,crestImage=new Image(),crestSrc='',lastKey='',sides=[],lastSn=0,hideOn=false,css=document.createElement('style');
 css.textContent='#ps2badge{position:fixed;z-index:20;display:none;align-items:center;height:1.5em;padding:0 0 0 2.15em;border-radius:999px;background:rgba(25,60,15,.8);color:#fff;font-family:"Roboto Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;font-weight:700;font-stretch:condensed;letter-spacing:.02em;text-transform:uppercase;line-height:1;pointer-events:none;white-space:nowrap;transform:translateY(-100%);box-shadow:0 .08em .25em rgba(0,0,0,.35)}#ps2badge img{position:absolute;left:-.3em;top:50%;height:2.05em;width:2.05em;transform:translateY(-50%);object-fit:contain;filter:drop-shadow(0 .05em .1em rgba(0,0,0,.5))}#ps2badge .nm{padding-right:.7em}#ps2badge .no{align-self:stretch;display:flex;align-items:center;justify-content:center;min-width:1.9em;padding:0 .5em;border-radius:0 999px 999px 0;background:#8fd11e;color:#fff;text-shadow:0 .04em .08em rgba(0,0,0,.35)}.ps2btn{position:fixed;z-index:60;border:0;border-radius:50%;background:rgba(10,30,15,.55);color:#fff;display:none;align-items:center;justify-content:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}.ps2pill{border-radius:999px;font:700 14px Arial,sans-serif;padding:8px 16px;width:auto;height:auto;text-decoration:none;background:rgba(10,30,15,.7);color:#fff}';
 function boot(){
-import('./player3d/players.js').catch(function(e){console.error('Não foi possível iniciar jogadores 3D:',e)});
 document.head.appendChild(css);
 badge=document.createElement('div');badge.id='ps2badge';document.body.appendChild(badge);
 shirtCanvas=document.createElement('canvas');shirtCanvas.id='ps2shirtDetails';shirtCanvas.style.cssText='position:fixed;left:0;top:0;z-index:19;pointer-events:none;display:none';shirtCtx=shirtCanvas.getContext('2d');document.body.appendChild(shirtCanvas);
