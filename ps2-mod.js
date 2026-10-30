@@ -56,7 +56,8 @@ function goalkeeperShirt(rt,isKeeper,who){
  function close(a,b){return a&&b&&a.length>=3&&a.every(function(v,i){return Math.abs(v-b[i])<0.005})}
  function restore(){if(!keeperShirt)return;keeperShirt.effects.forEach(function(x){try{if(close(x.fx.getParameter(0),x.applied))x.fx.setParameter(0,x.original)}catch(e){}});if(keeperShirt.stripes)try{if(!keeperShirt.stripes.isVisible)keeperShirt.stripes.isVisible=keeperShirt.stripesVisible}catch(e){}keeperShirt=null}
  try{var shirt=instance('shooterShirt'),shorts=instance('shooterShorts');if(keeperShirt&&(!isKeeper||keeperShirt.shirt!==shirt||keeperShirt.shorts!==shorts))restore();if(!isKeeper||!shirt)return;
- var cyanVisible=visible('goalkeeperShirtCyan'),orangeVisible=visible('goalkeeperShirtOrange'),color=cyanVisible&&!orangeVisible?[0.80,0.48,0]:orangeVisible&&!cyanVisible?[0,0.80,0.80]:who==='cpu'?[0.80,0.48,0]:[0,0.80,0.80];
+ // The player's keeper is orange in goal; the opponent's keeper is cyan.
+ var color=who==='player'?[0.80,0.48,0]:[0,0.80,0.80];
  if(!keeperShirt){keeperShirt={shirt:shirt,shorts:shorts,effects:[],stripes:instance('Stripes')};if(keeperShirt.stripes)keeperShirt.stripesVisible=keeperShirt.stripes.isVisible;[shirt,shorts].forEach(function(obj){if(!obj)return;var fx=(obj.effects||[]).find(function(e){return String(e.name).toLowerCase()==='setcolor'});if(fx)keeperShirt.effects.push({fx:fx,original:fx.getParameter(0).slice(),applied:null,shirt:obj===shirt})})}
  keeperShirt.color=color;keeperShirt.effects.forEach(function(x){x.applied=x.shirt?color:[0,0,0];x.fx.isActive=true;x.fx.setParameter(0,x.applied)});if(keeperShirt.stripes)keeperShirt.stripes.isVisible=false;
  }catch(e){restore()}
