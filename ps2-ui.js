@@ -70,7 +70,7 @@ if(b.dataset.start){var sr=P.rt();if(!sr)return;leagueOpen=true;helpOpen=false;d
 if(b.dataset.leagueBack){leagueOpen=false;divisionCountry=null;awaitingStart=false;leagueChosen=false;cur='';tick();return}
 if(b.dataset.league!==undefined){var country=+b.dataset.league;if(LG[country])showDivisions(country);return}
 if(b.dataset.divisionBack){divisionCountry=null;cur='';tick();return}
-if(b.dataset.division!==undefined){var li=+b.dataset.division,lr=P.rt();if(!lr||lr.layout.name!=='pickLeague'||!LGPOS[li])return;awaitingStart=true;leagueChosen=true;startAttempts=0;startAttemptAt=0;els['ps2-league'].style.pointerEvents='none';P.tap(LGPOS[li][0],LGPOS[li][1]);setTimeout(function(){var current=P.rt();if(current&&current.layout.name==='pickLeague'&&leagueChosen){leagueChosen=false;awaitingStart=false;els['ps2-league'].style.pointerEvents=''}},2500);return}
+if(b.dataset.division!==undefined){var li=+b.dataset.division,lr=P.rt();if(!lr||lr.layout.name!=='pickLeague'||!LGPOS[li])return;awaitingStart=true;leagueChosen=true;startAttempts=0;startAttemptAt=0;els['ps2-division'].style.pointerEvents='none';els['ps2-division'].querySelector('#divisionCountry').textContent=LG[li][0]+' · Preparando campeonato...';P.tap(LGPOS[li][0],LGPOS[li][1]);setTimeout(function(){var current=P.rt();if(current&&current.layout.name==='pickLeague'&&leagueChosen){leagueChosen=false;awaitingStart=false;els['ps2-division'].style.pointerEvents='';showDivisions(li)}},2500);return}
 if(b.dataset.help){helpOpen=b.dataset.help==='open';cur='';tick();return}
 if(b.dataset.go){location.href=b.dataset.go;return}
 if(b.dataset.pause){var act=b.dataset.pause;if(act==='resume'){closePause();return}if(act==='sound'){togglePauseSound();return}if(act==='cancel'){pauseConfirm=false;drawPause();return}if(act==='exit'){if(!pauseConfirm){pauseConfirm=true;drawPause();return}var r=P.rt();closePause();restoreMatchKits();if(r&&typeof r.goToLayout==='function')r.goToLayout('mainMenu');return}}
@@ -87,8 +87,8 @@ setInterval(tick,100);
   var rt=P.rt(),lay='';try{lay=rt&&rt.layout.name}catch(e){}
   if(lay==='first'){
     // Protect the whole transition, even between the periodic UI updates.
-    if(cur!=='ps2-league'){cur='ps2-league';show(cur)}
-    els['ps2-league'].style.pointerEvents='none';
+    var loadingScreen=awaitingStart&&divisionCountry!==null?'ps2-division':'ps2-league';if(cur!==loadingScreen){cur=loadingScreen;show(cur)}
+    els[loadingScreen].style.pointerEvents='none';
     try{rt.objects.bigText.getAllInstances().forEach(function(x){if(/^INITIALIZING TEAMS\.\.\.$/i.test(String(x.text||'').trim())){x.isVisible=false;x.opacity=0}})}catch(e){}
   }
   if(oldHide)hideOld();requestAnimationFrame(raf)
@@ -161,10 +161,10 @@ if(lay!=='matchIntroV2'&&lay!=='ballFlight3'){restoreMatchKits();kitOpen=false;k
 // Keep the league screen visible while Construct initializes the teams.
 var id=({splash:'ps2-splash',pickLeague:(leagueOpen?'ps2-league':'ps2-menu'),first:'ps2-league',mainMenu:'ps2-menu',teamPick:'ps2-teams',beforeMatchGroups:'ps2-table',knockoutPhase:'ps2-knockout',gameOver:'ps2-finish',matchIntroV2:'ps2-vs'})[lay]||'';
 els['ps2-league'].style.pointerEvents=(lay==='first'||leagueChosen)?'none':'';
-if(lay==='pickLeague'&&leagueOpen&&divisionCountry!==null&&!leagueChosen)id='ps2-division';
+if(leagueOpen&&divisionCountry!==null&&(lay==='pickLeague'||(awaitingStart&&(lay==='first'||lay==='mainMenu'))))id='ps2-division';
 if(helpOpen&&(lay==='mainMenu'||lay==='pickLeague'))id='ps2-help';
-if(lay==='mainMenu'&&awaitingStart){id='ps2-league';if(Date.now()-startAttemptAt>800&&startAttempts<4){startAttemptAt=Date.now();startAttempts++;P.tap(480,300)}}
-if(lay==='teamPick'&&awaitingStart){awaitingStart=false;leagueOpen=false;leagueChosen=false;startAttempts=0}
+if(lay==='mainMenu'&&awaitingStart){id=divisionCountry!==null?'ps2-division':'ps2-league';if(Date.now()-startAttemptAt>800&&startAttempts<4){startAttemptAt=Date.now();startAttempts++;P.tap(480,300)}}
+if(lay==='teamPick'&&awaitingStart){els['ps2-division'].style.pointerEvents='';awaitingStart=false;leagueOpen=false;leagueChosen=false;startAttempts=0}
 if(lay==='matchIntroV2'&&kitOpen)id='ps2-kit';if(lay==='ballFlight3'&&pauseOpen)id='ps2-pause';
 if(lay==='teamPick'&&cur!=='ps2-teams'){g.SKIP_GROUPS='no';els['ps2-teams'].querySelector('#skipGroups').checked=false}if(lay==='beforeMatchGroups')drawTable(rt);else tableSignature='';if(lay==='knockoutPhase')drawKnockout(rt);else knockoutSignature='';if(lay==='gameOver')drawFinish(rt);else gameOverSignature='';
 if(lay==='teamPick')drawTeams();else if(chosenTeam){chosenTeam='';teamsSignature='';teamScrollingUntil=0;lastTeamScan=0;teamSelectToken++}
