@@ -87,10 +87,10 @@ if(b.dataset.teamUid){selectTeam(b.dataset.teamUid);return}
 if(b.dataset.teamContinue){var rt=P.rt();if(rt&&rt.layout.name==='teamPick'&&chosenTeam){rt.globalVars.SKIP_GROUPS=els['ps2-teams'].querySelector('#skipGroups').checked?'yes':'no';if(typeof rt.goToLayout==='function'){rt.goToLayout('beforeMatchGroups');return}}P.tap(840,486);return}
 if(b.dataset.next){var rt=P.rt();if(kitState&&!applyMatchKits())return;if(rt)P.openPick();else P.tap(840,482);return}
 if(b.dataset.t){var c=b.dataset.t.split(',');P.tap(+c[0],+c[1])}})});
-setInterval(tick,100);
+cur='ps2-loading';show(cur);maskOldCanvas('loading');setInterval(tick,100);
 (function raf(){
   var rt=P.rt(),lay='';try{lay=rt&&rt.layout.name}catch(e){}
-  maskOldCanvas(lay);
+  maskOldCanvas(lay||'loading');
   if(lay==='first'){
     // Protect the whole transition, even between the periodic UI updates.
     var loadingScreen=awaitingStart&&divisionCountry!==null?'ps2-division':'ps2-league';if(cur!==loadingScreen){cur=loadingScreen;show(cur)}
@@ -180,7 +180,7 @@ if(editorOpen)id='ps2-editor';if(lay==='matchIntroV2'&&kitOpen&&!editorOpen)id='
 if(lay==='teamPick'&&cur!=='ps2-teams'){g.SKIP_GROUPS='no';els['ps2-teams'].querySelector('#skipGroups').checked=false}if(lay==='beforeMatchGroups')drawTable(rt);else tableSignature='';if(lay==='knockoutPhase')drawKnockout(rt);else knockoutSignature='';if(lay==='gameOver')drawFinish(rt);else gameOverSignature='';
 if(lay==='teamPick')drawTeams();else if(chosenTeam){chosenTeam='';teamsSignature='';teamScrollingUntil=0;lastTeamScan=0;teamSelectToken++}
 
-if((lay==='matchIntroV2'||lay==='matchIntro')&&g.myTeamID>=0){var A=team(rt,g.myTeamID,br),B=team(rt,g.myOpponentId,br),e=els['ps2-vs'];e.querySelector('#vsA').src=A.logo;e.querySelector('#vsB').src=B.logo;e.querySelector('#vsAn').textContent=A.n;e.querySelector('#vsBn').textContent=B.n}
+if((lay==='matchIntroV2'||lay==='matchIntro')&&g.myTeamID>=0){try{var A=team(rt,g.myTeamID,br),B=team(rt,g.myOpponentId,br),e=els['ps2-vs'];e.querySelector('#vsA').src=A.logo;e.querySelector('#vsB').src=B.logo;e.querySelector('#vsAn').textContent=A.n;e.querySelector('#vsBn').textContent=B.n}catch(e){}}
 if(lay==='afterMatch'){try{var at=team(rt,g.myTeamID,br),bt=team(rt,g.myOpponentId,br);els['ps2-after'].querySelector('#afterScore').textContent=at.n+' '+g.tempResultPlayer+' x '+g.tempResultCPU+' '+bt.n}catch(e){}}
 maskOldCanvas(lay);if(cur!==id){cur=id;show(id)}
 /* placar */
