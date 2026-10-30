@@ -25,12 +25,11 @@ Object.defineProperty(XMLHttpRequest.prototype,'responseText',{configurable:true
 Object.defineProperty(XMLHttpRequest.prototype,'response',{configurable:true,get:function(){var v=dR.get.call(this);if(!(this.__ps2&&this.readyState===4))return v;if(typeof v==='string')return fix(v);if(v&&typeof v==='object')return JSON.parse(fix(JSON.stringify(v)));return v}});
 /* 2) interface sobre o jogo */
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-var cv,badge,fsb,edb,shirtCanvas,shirtCtx,shirtData=null,crestImage=new Image(),crestSrc='',lastKey='',sides=[],lastSn=0,hideOn=false,css=document.createElement('style');
+var cv,badge,fsb,edb,lastKey='',sides=[],lastSn=0,hideOn=false,css=document.createElement('style');
 css.textContent='#ps2badge{position:fixed;z-index:20;display:none;align-items:center;height:1.5em;padding:0 0 0 2.15em;border-radius:999px;background:rgba(25,60,15,.8);color:#fff;font-family:"Roboto Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;font-weight:700;font-stretch:condensed;letter-spacing:.02em;text-transform:uppercase;line-height:1;pointer-events:none;white-space:nowrap;transform:translateY(-100%);box-shadow:0 .08em .25em rgba(0,0,0,.35)}#ps2badge img{position:absolute;left:-.3em;top:50%;height:2.05em;width:2.05em;transform:translateY(-50%);object-fit:contain;filter:drop-shadow(0 .05em .1em rgba(0,0,0,.5))}#ps2badge .nm{padding-right:.7em}#ps2badge .no{align-self:stretch;display:flex;align-items:center;justify-content:center;min-width:1.9em;padding:0 .5em;border-radius:0 999px 999px 0;background:#8fd11e;color:#fff;text-shadow:0 .04em .08em rgba(0,0,0,.35)}.ps2btn{position:fixed;z-index:60;border:0;border-radius:50%;background:rgba(10,30,15,.55);color:#fff;display:none;align-items:center;justify-content:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}.ps2pill{border-radius:999px;font:700 14px Arial,sans-serif;padding:8px 16px;width:auto;height:auto;text-decoration:none;background:rgba(10,30,15,.7);color:#fff}';
 function boot(){
 document.head.appendChild(css);
 badge=document.createElement('div');badge.id='ps2badge';document.body.appendChild(badge);
-shirtCanvas=document.createElement('canvas');shirtCanvas.id='ps2shirtDetails';shirtCanvas.style.cssText='position:fixed;left:0;top:0;z-index:19;pointer-events:none;display:none';shirtCtx=shirtCanvas.getContext('2d');document.body.appendChild(shirtCanvas);
 fsb=document.createElement('button');fsb.className='ps2btn';fsb.setAttribute('aria-label','Tela cheia');
 fsb.innerHTML='<svg viewBox="0 0 24 24" width="60%" height="60%" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
 document.body.appendChild(fsb);
@@ -40,7 +39,7 @@ fsb.addEventListener('click',function(e){e.stopPropagation();var d=document,el=d
 if(on){(d.exitFullscreen||d.webkitExitFullscreen).call(d);try{screen.orientation.unlock()}catch(x){}}
 else{var rq=el.requestFullscreen||el.webkitRequestFullscreen;if(rq){var p=rq.call(el);var lk=function(){try{screen.orientation.lock('landscape').catch(function(){})}catch(x){}};if(p&&p.then)p.then(lk,function(){});else lk()}}});
 P.loadColors();setInterval(tick,120);
-(function raf(){if(hideOn){var r=ir();try{r.objects.midText.getAllInstances().forEach(function(i){if(i.x<430&&i.y>380&&i.y<430&&(/^POINTS/i.test(i.text)||/^[0-9]+$/.test(String(i.text).trim()))){i.isVisible=false;i.opacity=0}})}catch(e){}}drawShirtDetails();requestAnimationFrame(raf)})();
+(function raf(){if(hideOn){var r=ir();try{r.objects.midText.getAllInstances().forEach(function(i){if(i.x<430&&i.y>380&&i.y<430&&(/^POINTS/i.test(i.text)||/^[0-9]+$/.test(String(i.text).trim()))){i.isVisible=false;i.opacity=0}})}catch(e){}}requestAnimationFrame(raf)})();
 }
 function ir(){try{return c3_runtimeInterface._localRuntime.GetIRuntime()}catch(e){return null}}
 function tick(){
@@ -51,31 +50,17 @@ var rt=ir();if(!rt){badge.style.display='none';edb.style.display='none';return}
 var lay='',g=rt.globalVars;try{lay=rt.layout.name}catch(e){}
 var br=g.leagueNum===LG;
 edb.style.display=(br&&lay==='mainMenu'&&!P.noEdb)?'inline-flex':'none';edb.style.left=(r.left+w/2)+'px';edb.style.top=(r.top+r.height*.93)+'px';edb.style.transform='translate(-50%,-50%)';
-if(lay!=='ballFlight3'||!br){badge.style.display='none';shirtData=null;hideOn=false;sides=[];lastSn=0;return}
+if(lay!=='ballFlight3'||!br){badge.style.display='none';hideOn=false;sides=[];lastSn=0;return}
 hideOn=true;
 var sn=g.shotNumber,who=g.whoShoots;if(sn<lastSn)sides=[];lastSn=sn;if(sn>0)sides[sn]=who;
 var idx=0,k;for(k=1;k<sn;k++)if(sides[k]===who)idx++;
 var tid=who==='player'?g.myTeamID:g.myOpponentId;if(tid==null||tid<0){badge.style.display='none';return}
 var a=rt.objects.arrTeams.getFirstInstance(),name=a.getAt(tid,0),kit=a.getAt(tid,2),d=P.load().t[tid]||{},
 pl=(d.p&&d.p.length)?d.p:P.defPlayers(tid),ord=P.order(pl.length,d.k),pi=ord[idx%ord.length],pn=pl[pi],shirtNo=(d.num&&Number.isInteger(d.num[pi])&&d.num[pi]>0&&d.num[pi]<=99)?d.num[pi]:pi+1,logo=d.l||P.crestURL(kit,name),H=r.height,key=[tid,pn,shirtNo,logo.length,H|0].join('|');
-shirtData=P.playerAppearance={shot:sn,who:who,name:pn,number:shirtNo,kit:kit,team:String(name||''),sponsor:typeof d.sponsor==='string'?d.sponsor.trim().slice(0,18):''};
+P.playerAppearance={shot:sn,who:who,name:pn,number:shirtNo,kit:kit,team:String(name||''),sponsor:typeof d.sponsor==='string'?d.sponsor.trim().slice(0,18):''};
 badge.style.left=(r.left+r.width*.014)+'px';badge.style.top=(r.top+H*.968)+'px';badge.style.fontSize=(H*.046)+'px';badge.style.display='flex';
 if(key!==lastKey){lastKey=key;badge.innerHTML='<img alt="" src="'+esc(logo)+'"><span class="nm">'+esc(pn)+'</span><span class="no">'+shirtNo+'</span>'}
 }
-
-/* Detalhes por jogador: acompanha a transformação da camada da camisa. */
-function drawShirtDetails(){if(!shirtCanvas||!shirtCtx)return;if(P.players3dActive){shirtCanvas.style.display='none';return}var rt=ir(),data=shirtData,game=cv&&cv.isConnected?cv:document.querySelector('canvas:not(#ps2shirtDetails):not(#ps2players3d)');if(!rt||!data||!game||rt.layout.name!=='ballFlight3'||P.ovl||rt.globalVars.shotNumber!==data.shot||rt.globalVars.whoShoots!==data.who){shirtCanvas.style.display='none';return}
-try{var inst=rt.objects.shooterShirt.getAllInstances().find(function(x){return x.isVisible&&x.opacity>0});if(!inst||!inst.layer){shirtCanvas.style.display='none';return}var rect=game.getBoundingClientRect();if(!rect.width||!rect.height)return;var ratio=Math.min(window.devicePixelRatio||1,2),cw=Math.round(rect.width*ratio),ch=Math.round(rect.height*ratio);if(shirtCanvas.width!==cw)shirtCanvas.width=cw;if(shirtCanvas.height!==ch)shirtCanvas.height=ch;shirtCanvas.style.left=rect.left+'px';shirtCanvas.style.top=rect.top+'px';shirtCanvas.style.width=rect.width+'px';shirtCanvas.style.height=rect.height+'px';shirtCanvas.style.display='block';var ctx=shirtCtx;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cw,ch);
-var w=inst.width,h=inst.height;if(!w||!h){shirtCanvas.style.display='none';return}var angle=inst.angle||0,cos=Math.cos(angle),sin=Math.sin(angle),left=-inst.originX*w,top=-inst.originY*h;function project(dx,dy){return inst.layer.layerToCssPx(inst.x+dx*cos-dy*sin,inst.y+dx*sin+dy*cos)}var p0=project(left,top),px=project(left+w,top),py=project(left,top+h);ctx.setTransform((px[0]-p0[0])*ratio/w,(px[1]-p0[1])*ratio/w,(py[0]-p0[0])*ratio/h,(py[1]-p0[1])*ratio/h,(p0[0]-rect.left)*ratio,(p0[1]-rect.top)*ratio);
-var color=P.rgbArr(+String(data.kit).slice(2,4)),lum=.299*color[0]+.587*color[1]+.114*color[2],ink=lum>180?'#111':'#fff';
-var isFlamengo=/flamengo/i.test(data.team),display=String(data.name||'').trim().toUpperCase();
-ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.fillStyle=isFlamengo?'#fff':ink;
-// Distribuição inspirada na parte de trás da camisa: marca, nome, número e marca inferior.
-if(isFlamengo){ctx.font='bold '+Math.max(3,h*.075)+'px Arial,sans-serif';ctx.fillText('✿ Hapvida',w*.5,h*.215,w*.49)}
-ctx.font='bold '+Math.max(3,h*.105)+'px "Arial Narrow", Impact, sans-serif';ctx.fillText(display,w*.5,h*(isFlamengo?.345:.32),w*.65);
-ctx.font='900 '+Math.max(6,h*(isFlamengo?.42:.39))+'px Impact, "Arial Narrow", sans-serif';ctx.fillText(String(data.number),w*.5,h*(isFlamengo?.58:.55),w*.50);
-if(isFlamengo){ctx.font='italic bold '+Math.max(3,h*.065)+'px Arial,sans-serif';ctx.fillText('ASSIST',w*.5,h*.815,w*.42);ctx.fillText('CARD',w*.5,h*.875,w*.35)}else if(data.sponsor){ctx.font='bold '+Math.max(3,h*.08)+'px Arial,sans-serif';ctx.fillText(data.sponsor.toUpperCase(),w*.5,h*.79,w*.62)}
-}catch(e){shirtCanvas.style.display='none'}}
 
 /* 3) tela de escolha dos cobradores: aparece ao tocar em NEXT na tela "A VS B", antes da partida */
 var pk,pick=null,allowUntil=0;
