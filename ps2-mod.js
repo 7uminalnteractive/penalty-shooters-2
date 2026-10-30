@@ -76,11 +76,11 @@ if(/up$|click$/.test(e.type)&&!pick)openPick()}
 ['pointerdown','pointerup','mousedown','mouseup','touchstart','touchend','click'].forEach(function(t){window.addEventListener(t,guard,true)});
 function openPick(){var rt=ir(),g=rt.globalVars,tid=g.myTeamID,oid=g.myOpponentId;if(tid==null||tid<0)return;
 var a=rt.objects.arrTeams.getFirstInstance(),all=P.load().t,d=all[tid]||{},od=all[oid]||{},pl=(d.p&&d.p.length)?d.p:P.defPlayers(tid),n=a.getAt(tid,0),on=a.getAt(oid,0);
-pick={tid:tid,pl:pl,t0:Date.now(),sel:P.order(pl.length,d.k).slice(0,Math.min(5,pl.length)),n:n,on:on,lg:d.l||P.crestURL(a.getAt(tid,2),n),olg:od.l||P.crestURL(a.getAt(oid,2),on)};
+pick={tid:tid,pl:pl,profiles:d.perfis||[],numbers:d.num||[],t0:Date.now(),sel:P.order(pl.length,d.k).slice(0,Math.min(5,pl.length)),n:n,on:on,lg:d.l||P.crestURL(a.getAt(tid,2),n),olg:od.l||P.crestURL(a.getAt(oid,2),on)};
 if(!pk){pk=document.createElement('div');pk.id='ps2pick';document.body.appendChild(pk);css.textContent+=PCSS;pk.addEventListener('click',pickClick)}
 drawPick();pk.style.display='flex'}
 function drawPick(){var p=pick,h='<div class="pk-top"><div class="pk-title">Cobradores</div><div class="pk-vs"><img alt="" src="'+esc(p.lg)+'"><span>'+esc(p.n)+'</span><i>VS</i><span>'+esc(p.on)+'</span><img alt="" src="'+esc(p.olg)+'"></div></div><div class="pk-body"><section><h3>Elenco · toque para escolher</h3><div class="pk-roster">';
-p.pl.forEach(function(nm,i){var o=p.sel.indexOf(i);h+='<button class="pc'+(o>=0?' on':'')+'" data-a="t" data-i="'+i+'"><span class="no">'+(i+1)+'</span><span class="nm">'+esc(nm)+'</span><span class="od">'+(o>=0?o+1:'')+'</span></button>'});
+p.pl.forEach(function(nm,i){var o=p.sel.indexOf(i);h+='<button class="pc'+(o>=0?' on':'')+'" data-a="t" data-i="'+i+'"><span class="no">'+(p.numbers[i]||i+1)+'</span><span class="nm">'+esc(nm)+((p.profiles[i]&&p.profiles[i].position==='Goleiro')?' (GOL)':'')+'</span><span class="od">'+(o>=0?o+1:'')+'</span></button>'});
 h+='</div></section><section><h3>Ordem das cobranças</h3><div class="pk-slots">';
 for(var j=0;j<Math.min(5,p.pl.length);j++){var v=p.sel[j];h+=(v==null)?'<div class="sl em"><b>'+(j+1)+'º</b><span>Toque num jogador</span></div>':'<div class="sl"><b>'+(j+1)+'º</b><span>'+esc(p.pl[v])+'</span><button data-a="u" data-j="'+j+'" aria-label="Subir">▲</button><button data-a="d" data-j="'+j+'" aria-label="Descer">▼</button><button data-a="r" data-j="'+j+'" aria-label="Remover">✕</button></div>'}
 h+='</div></section></div><div class="pk-foot"><button class="pk-b2" data-a="b">Voltar</button><button class="pk-b2" data-a="c">Limpar</button><button class="pk-b2" data-a="x">Automático</button><button class="pk-b1" data-a="ok">Confirmar</button></div>';pk.innerHTML=h}
