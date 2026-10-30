@@ -47,6 +47,9 @@ function showDivisions(i){divisionCountry=i;var d=P.load(i),cfg=d.config||{},lab
 mk('ps2-menu','ps2ui','<div class="mm"><nav class="gl rail"><button class="on" aria-label="Início">'+ico('home')+'</button><button disabled aria-label="Carreira" style="opacity:.4">'+ico('job')+'</button><button id="mmEd" data-go="editor.html" aria-label="Editor de times" title="Editor de times">'+ico('pen')+'</button><button data-help="open" aria-label="Como jogar" title="Como jogar">'+ico('help')+'</button></nav>'
 +'<div class="mmc"><div class="gl hero"><div class="lbl">Futebol de pênaltis</div><div class="wm">Penalty<b>Shooters 2</b></div><p>Escolha seu time, defina os cobradores e vá até a final.</p><div class="acts"><button class="ub pri" data-start="quick">Campeonato rápido</button><button class="ub" disabled>Nova carreira <small>EM BREVE</small></button><button class="ub" disabled>Carregar carreira <small>EM BREVE</small></button></div></div>'
 +'</div></div>');
+mk('ps2-loading','ps2ui','<div class="ct"><section class="gl pause-panel"><h2>Preparando campeonato...</h2></section></div>');
+mk('ps2-after','ps2ui','<div class="ct"><section class="gl pause-panel"><div class="lbl">Fim da partida</div><h2>Resultado</h2><p id="afterScore"></p><div class="bar"><button class="ub pri" data-t="480,430">Continuar</button></div></section></div>');
+mk('ps2-results','ps2ui','<div class="ct"><section class="gl pause-panel"><div class="lbl">Campeonato rápido</div><h2>Resultados</h2><p>Acompanhe a próxima etapa do campeonato.</p><div class="bar"><button class="ub" data-t="48,84">Menu</button><button class="ub pri" data-t="905,84">Continuar</button></div></section></div>');
 mk('ps2-help','ps2ui','<div class="ct"><section class="gl pause-panel"><h2>Como jogar</h2><p>Escolha o time e os cobradores. Toque ou clique para escolher a direção do chute. Na defesa, escolha onde o goleiro deve saltar.</p><button class="ub pri" data-help="back">Voltar</button></section></div>');
 /* Seleção de time: os botões acionam os controles originais do jogo. */
 mk('ps2-teams','ps2ui','<div class="pg"><div class="lbl">Campeonato rápido</div><h2>Escolha seu time</h2><p>Selecione um clube para continuar.</p><div class="grid" id="teamGrid"></div><label class="row" style="cursor:pointer"><input type="checkbox" id="skipGroups"> Pular fase de grupos</label><p id="teamStatus" role="status"></p><div class="bar"><button class="ub pri" id="teamContinue" data-team-continue="1" disabled>Continuar</button></div></div>');
@@ -87,6 +90,7 @@ if(b.dataset.t){var c=b.dataset.t.split(',');P.tap(+c[0],+c[1])}})});
 setInterval(tick,100);
 (function raf(){
   var rt=P.rt(),lay='';try{lay=rt&&rt.layout.name}catch(e){}
+  maskOldCanvas(lay);
   if(lay==='first'){
     // Protect the whole transition, even between the periodic UI updates.
     var loadingScreen=awaitingStart&&divisionCountry!==null?'ps2-division':'ps2-league';if(cur!==loadingScreen){cur=loadingScreen;show(cur)}
@@ -96,6 +100,9 @@ setInterval(tick,100);
   if(oldHide)hideOld();requestAnimationFrame(raf)
 })();
 }
+// Keep Construct running to process the game, while its older screens stay invisible.
+var maskedCanvas=null,previousCanvasOpacity='';
+function maskOldCanvas(lay){var canvas=document.querySelector('canvas:not(#ps2shirtDetails):not(#ps2players3d)');if(maskedCanvas&&canvas!==maskedCanvas){maskedCanvas.style.opacity=previousCanvasOpacity;maskedCanvas=null}if(!canvas)return;var cover=['splash','pickLeague','first','mainMenu','teamPick','beforeMatchGroups','knockoutPhase','gameOver','matchIntro','matchIntroV2','afterMatch','results','loading'].indexOf(lay)>=0;if(cover){if(!maskedCanvas){maskedCanvas=canvas;previousCanvasOpacity=canvas.style.opacity}if(canvas.style.opacity!=='0')canvas.style.opacity='0'}else if(maskedCanvas){maskedCanvas.style.opacity=previousCanvasOpacity;maskedCanvas=null}}
 function hideLegacy(x,hideOpacity){try{if(!hiddenLegacy.has(x))hiddenLegacy.set(x,{visible:x.isVisible,opacity:x.opacity});x.isVisible=false;if(hideOpacity)x.opacity=0}catch(e){}}
 function restoreLegacy(){hiddenLegacy.forEach(function(v,x){try{if(x.isVisible===false)x.isVisible=v.visible;if(x.opacity===0)x.opacity=v.opacity}catch(e){}});hiddenLegacy.clear()}
 function hideOld(){var rt=P.rt();if(!rt||rt.layout.name!=='ballFlight3')return;var o=rt.objects;try{o.mainMenuIcon.getAllInstances().forEach(function(x){hideLegacy(x,false)})}catch(e){}['result_base','shotStatus'].forEach(function(k){try{o[k].getAllInstances().forEach(function(x){hideLegacy(x,true)})}catch(e){}});
@@ -163,7 +170,7 @@ var rt=P.rt();if(!rt){return}
 var lay='';try{lay=rt.layout.name}catch(e){}var g=rt.globalVars,br=g.leagueNum===P.league;
 if(lay!=='matchIntroV2'&&lay!=='ballFlight3'){restoreMatchKits();kitOpen=false;kitState=null}
 // Keep the league screen visible while Construct initializes the teams.
-var id=({splash:'ps2-splash',pickLeague:(leagueOpen?'ps2-league':'ps2-menu'),first:'ps2-league',mainMenu:'ps2-menu',teamPick:'ps2-teams',beforeMatchGroups:'ps2-table',knockoutPhase:'ps2-knockout',gameOver:'ps2-finish',matchIntroV2:'ps2-vs'})[lay]||'';
+var id=({splash:'ps2-splash',pickLeague:(leagueOpen?'ps2-league':'ps2-menu'),first:'ps2-league',mainMenu:'ps2-menu',teamPick:'ps2-teams',beforeMatchGroups:'ps2-table',knockoutPhase:'ps2-knockout',gameOver:'ps2-finish',matchIntroV2:'ps2-vs',matchIntro:'ps2-vs',afterMatch:'ps2-after',results:'ps2-results',loading:'ps2-loading'})[lay]||'';
 els['ps2-league'].style.pointerEvents=(lay==='first'||leagueChosen)?'none':'';
 if(leagueOpen&&divisionCountry!==null&&(lay==='pickLeague'||(awaitingStart&&(lay==='first'||lay==='mainMenu'))))id='ps2-division';
 if(helpOpen&&(lay==='mainMenu'||lay==='pickLeague'))id='ps2-help';
@@ -173,8 +180,9 @@ if(editorOpen)id='ps2-editor';if(lay==='matchIntroV2'&&kitOpen&&!editorOpen)id='
 if(lay==='teamPick'&&cur!=='ps2-teams'){g.SKIP_GROUPS='no';els['ps2-teams'].querySelector('#skipGroups').checked=false}if(lay==='beforeMatchGroups')drawTable(rt);else tableSignature='';if(lay==='knockoutPhase')drawKnockout(rt);else knockoutSignature='';if(lay==='gameOver')drawFinish(rt);else gameOverSignature='';
 if(lay==='teamPick')drawTeams();else if(chosenTeam){chosenTeam='';teamsSignature='';teamScrollingUntil=0;lastTeamScan=0;teamSelectToken++}
 
-if(lay==='matchIntroV2'&&g.myTeamID>=0){var A=team(rt,g.myTeamID,br),B=team(rt,g.myOpponentId,br),e=els['ps2-vs'];e.querySelector('#vsA').src=A.logo;e.querySelector('#vsB').src=B.logo;e.querySelector('#vsAn').textContent=A.n;e.querySelector('#vsBn').textContent=B.n}
-if(cur!==id){cur=id;show(id)}
+if((lay==='matchIntroV2'||lay==='matchIntro')&&g.myTeamID>=0){var A=team(rt,g.myTeamID,br),B=team(rt,g.myOpponentId,br),e=els['ps2-vs'];e.querySelector('#vsA').src=A.logo;e.querySelector('#vsB').src=B.logo;e.querySelector('#vsAn').textContent=A.n;e.querySelector('#vsBn').textContent=B.n}
+if(lay==='afterMatch'){try{var at=team(rt,g.myTeamID,br),bt=team(rt,g.myOpponentId,br);els['ps2-after'].querySelector('#afterScore').textContent=at.n+' '+g.tempResultPlayer+' x '+g.tempResultCPU+' '+bt.n}catch(e){}}
+maskOldCanvas(lay);if(cur!==id){cur=id;show(id)}
 /* placar */
 var cv=document.querySelector('canvas:not(#ps2shirtDetails):not(#ps2players3d)');if(!cv)return;
 if(lay!=='ballFlight3'||g.myTeamID<0){els.ps2pauseBtn.style.display='none';if(pauseOpen){rt.timeScale=pauseScale;pauseOpen=false}els.ps2sb.style.display='none';oldHide=false;restoreLegacy();whoAt=[];lastSn=0;return}
