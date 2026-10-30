@@ -74,7 +74,16 @@ if(b.dataset.teamContinue){var rt=P.rt();if(rt&&rt.layout.name==='teamPick'&&cho
 if(b.dataset.next){var rt=P.rt();if(kitState&&!applyMatchKits())return;if(rt&&rt.globalVars.leagueNum===P.league)P.openPick();else P.tap(840,482);return}
 if(b.dataset.t){var c=b.dataset.t.split(',');P.tap(+c[0],+c[1])}})});
 setInterval(tick,100);
-(function raf(){if(oldHide)hideOld();requestAnimationFrame(raf)})();
+(function raf(){
+  var rt=P.rt(),lay='';try{lay=rt&&rt.layout.name}catch(e){}
+  if(lay==='first'){
+    // Protect the whole transition, even between the periodic UI updates.
+    if(cur!=='ps2-league'){cur='ps2-league';show(cur)}
+    els['ps2-league'].style.pointerEvents='none';
+    try{rt.objects.bigText.getAllInstances().forEach(function(x){if(/^INITIALIZING TEAMS\.\.\.$/i.test(String(x.text||'').trim())){x.isVisible=false;x.opacity=0}})}catch(e){}
+  }
+  if(oldHide)hideOld();requestAnimationFrame(raf)
+})();
 }
 function hideOld(){var rt=P.rt();if(!rt)return;var o=rt.objects;try{o.mainMenuIcon.getAllInstances().forEach(function(x){x.isVisible=false})}catch(e){}['result_base','shotStatus'].forEach(function(k){try{o[k].getAllInstances().forEach(function(x){x.isVisible=false;x.opacity=0})}catch(e){}});
 try{o.midText.getAllInstances().forEach(function(x){if(x.x>=590&&x.y>=350&&x.y<=445){x.isVisible=false;x.opacity=0}})}catch(e){}
