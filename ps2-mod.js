@@ -10,6 +10,8 @@ P.load=function(n){try{var d=JSON.parse(localStorage.getItem(P.keyForLeague(n)))
 P.save=function(o,n){localStorage.setItem(P.keyForLeague(n),JSON.stringify(o))};
 var SUR=['SILVA','SANTOS','OLIVEIRA','SOUZA','LIMA','PEREIRA','COSTA','RIBEIRO','ALVES','MARTINS','ROCHA','GOMES','BARBOSA','CARDOSO','TEIXEIRA','NUNES','MOREIRA','CAMPOS','MENDES','FREITAS','PINTO','AZEVEDO','DIAS','ARAUJO','FERREIRA','RAMOS','MACHADO','BORGES','LOPES','VIEIRA'],INI='ABCDEFGHJLMNPRSTV';
 P.defPlayers=function(id){function hh(x){x=((x>>>16)^x)*0x45d9f3b>>>0;x=((x>>>16)^x)*0x45d9f3b>>>0;return((x>>>16)^x)>>>0}var a=[],seen={},i,n,k,t;for(i=0;i<11;i++){k=0;do{t=INI[hh(id*131+i*17+k*7+3)%INI.length]+'. '+SUR[hh(id*977+i*31+k*13+5)%SUR.length];k++}while(seen[t]&&k<60);seen[t]=1;a.push(t)}return a};
+// Sempre oferece um goleiro quando o elenco antigo não identifica um.
+P.roster=function(id,d){d=d||{};var players=(d.p&&d.p.length?d.p:P.defPlayers(id)).slice(),profiles=Array.isArray(d.perfis)?d.perfis.slice():[],numbers=Array.isArray(d.num)?d.num.slice():[];if(!players.some(function(_,i){return profiles[i]&&String(profiles[i].position||'').toLowerCase()==='goleiro'})){var i=players.length;players.push('GOLEIRO');profiles[i]={name:'GOLEIRO',position:'Goleiro'};numbers[i]=null}return{players:players,profiles:profiles,numbers:numbers}};
 P.order=function(n,k){var r=[],i,v;(k||[]).forEach(function(x){x=+x;if(x>=0&&x<n&&r.indexOf(x)<0)r.push(x)});for(i=0;i<n;i++)if(r.indexOf(i)<0)r.push(i);return r};
 P.colors=null;
 P.loadColors=function(){return fetch('teamColours.json').then(function(r){return r.json()}).then(function(j){P.colors=j.data.map(function(c){return c.map(function(v){return v[0]})});return P.colors}).catch(function(){})};
@@ -59,7 +61,7 @@ var sn=g.shotNumber,who=g.whoShoots;if(sn<lastSn)sides=[];lastSn=sn;if(sn>0)side
 var idx=0,k;for(k=1;k<sn;k++)if(sides[k]===who)idx++;
 var tid=who==='player'?g.myTeamID:g.myOpponentId;if(tid==null||tid<0){badge.style.display='none';return}
 var a=rt.objects.arrTeams.getFirstInstance(),name=a.getAt(tid,0),kit=a.getAt(tid,2),d=P.load().t[tid]||{},
-pl=(d.p&&d.p.length)?d.p:P.defPlayers(tid),ord=P.order(pl.length,d.k),pi=ord[idx%ord.length],pn=pl[pi],shirtNo=(d.num&&Number.isInteger(d.num[pi])&&d.num[pi]>0&&d.num[pi]<=99)?d.num[pi]:pi+1,logo=d.l||P.crestURL(kit,name),H=r.height,key=[tid,pn,shirtNo,logo.length,H|0].join('|');
+pl=P.roster(tid,d).players,ord=P.order(pl.length,d.k),pi=ord[idx%ord.length],pn=pl[pi],shirtNo=(d.num&&Number.isInteger(d.num[pi])&&d.num[pi]>0&&d.num[pi]<=99)?d.num[pi]:pi+1,logo=d.l||P.crestURL(kit,name),H=r.height,key=[tid,pn,shirtNo,logo.length,H|0].join('|');
 P.playerAppearance={shot:sn,who:who,name:pn,number:shirtNo,kit:kit,team:String(name||''),sponsor:typeof d.sponsor==='string'?d.sponsor.trim().slice(0,18):''};
 badge.style.left=(r.left+r.width*.014)+'px';badge.style.top=(r.top+H*.968)+'px';badge.style.fontSize=(H*.046)+'px';badge.style.display='flex';
 if(key!==lastKey){lastKey=key;badge.innerHTML='<img alt="" src="'+esc(logo)+'"><span class="nm">'+esc(pn)+'</span><span class="no">'+shirtNo+'</span>'}
@@ -75,8 +77,8 @@ e.stopImmediatePropagation();if(e.cancelable)e.preventDefault();
 if(/up$|click$/.test(e.type)&&!pick)openPick()}
 ['pointerdown','pointerup','mousedown','mouseup','touchstart','touchend','click'].forEach(function(t){window.addEventListener(t,guard,true)});
 function openPick(){var rt=ir(),g=rt.globalVars,tid=g.myTeamID,oid=g.myOpponentId;if(tid==null||tid<0)return;
-var a=rt.objects.arrTeams.getFirstInstance(),all=P.load().t,d=all[tid]||{},od=all[oid]||{},pl=(d.p&&d.p.length)?d.p:P.defPlayers(tid),n=a.getAt(tid,0),on=a.getAt(oid,0);
-pick={tid:tid,pl:pl,profiles:d.perfis||[],numbers:d.num||[],t0:Date.now(),sel:P.order(pl.length,d.k).slice(0,Math.min(5,pl.length)),n:n,on:on,lg:d.l||P.crestURL(a.getAt(tid,2),n),olg:od.l||P.crestURL(a.getAt(oid,2),on)};
+var a=rt.objects.arrTeams.getFirstInstance(),all=P.load().t,d=all[tid]||{},od=all[oid]||{},roster=P.roster(tid,d),pl=roster.players,n=a.getAt(tid,0),on=a.getAt(oid,0);
+pick={tid:tid,pl:pl,profiles:roster.profiles,numbers:roster.numbers,t0:Date.now(),sel:P.order(pl.length,d.k).slice(0,Math.min(5,pl.length)),n:n,on:on,lg:d.l||P.crestURL(a.getAt(tid,2),n),olg:od.l||P.crestURL(a.getAt(oid,2),on)};
 if(!pk){pk=document.createElement('div');pk.id='ps2pick';document.body.appendChild(pk);css.textContent+=PCSS;pk.addEventListener('click',pickClick)}
 drawPick();pk.style.display='flex'}
 function drawPick(){var p=pick,h='<div class="pk-top"><div class="pk-title">Cobradores</div><div class="pk-vs"><img alt="" src="'+esc(p.lg)+'"><span>'+esc(p.n)+'</span><i>VS</i><span>'+esc(p.on)+'</span><img alt="" src="'+esc(p.olg)+'"></div></div><div class="pk-body"><section><h3>Elenco · toque para escolher</h3><div class="pk-roster">';
