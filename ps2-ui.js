@@ -1,3 +1,4 @@
+
 /* PS2 UI: visual minimalista (vidro), menus e placar estilo transmissão. Uso pessoal. */
 (function(){
 'use strict';
@@ -109,7 +110,9 @@ function tick(){
 var rt=P.rt();if(!rt){return}
 var lay='';try{lay=rt.layout.name}catch(e){}var g=rt.globalVars,br=g.leagueNum===P.league;
 if(lay!=='matchIntroV2'&&lay!=='ballFlight3'){restoreMatchKits();kitOpen=false;kitState=null}
-var id=({splash:'ps2-splash',pickLeague:'ps2-league',mainMenu:'ps2-menu',teamPick:'ps2-teams',beforeMatchGroups:'ps2-table',knockoutPhase:'ps2-knockout',gameOver:'ps2-finish',matchIntroV2:'ps2-vs'})[lay]||'';
+// Keep the league screen visible while Construct initializes the teams.
+var id=({splash:'ps2-splash',pickLeague:'ps2-league',first:'ps2-league',mainMenu:'ps2-menu',teamPick:'ps2-teams',beforeMatchGroups:'ps2-table',knockoutPhase:'ps2-knockout',gameOver:'ps2-finish',matchIntroV2:'ps2-vs'})[lay]||'';
+els['ps2-league'].style.pointerEvents=lay==='first'?'none':'';
 if(lay==='matchIntroV2'&&kitOpen)id='ps2-kit';if(lay==='ballFlight3'&&pauseOpen)id='ps2-pause';
 if(lay==='teamPick'&&cur!=='ps2-teams'){g.SKIP_GROUPS='no';els['ps2-teams'].querySelector('#skipGroups').checked=false}if(lay==='beforeMatchGroups')drawTable(rt);else tableSignature='';if(lay==='knockoutPhase')drawKnockout(rt);else knockoutSignature='';if(lay==='gameOver')drawFinish(rt);else gameOverSignature='';
 if(lay==='teamPick')drawTeams();else if(chosenTeam){chosenTeam='';teamsSignature='';teamScrollingUntil=0;lastTeamScan=0;teamSelectToken++}
