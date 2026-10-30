@@ -62,7 +62,13 @@ const [clipsGlb,sculptGlb]=await Promise.all(['ps2-clips.glb','ps2-player.glb'].
         && o.material.name === 'hair') hairMeshes.push(o);
   });
   hairMeshes.forEach(o => {o.material.side=THREE.DoubleSide; o.material.roughness=1;});
-for(const clip of clipsGlb.animations)for(const track of clip.tracks)if(track.name==='player.position')for(let i=0;i<track.values.length;i+=3){track.values[i]=0;track.values[i+1]=0}
+// Save root motion separately so the keeper can travel across the goal while
+// the legacy sprite's frame changes. The model itself stays anchored.
+const rootMotion=new Map();
+for(const clip of clipsGlb.animations)for(const track of clip.tracks)if(track.name==='player.position'){
+  rootMotion.set(clip.name,track.clone().createInterpolant());
+  for(let i=0;i<track.values.length;i+=3){track.values[i]=0;track.values[i+1]=0}
+}
 P.players3dLoading=true;
 const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
 P.players3dLoading=false;
@@ -73,17 +79,28 @@ const idle=clipsGlb.animations.find(c=>c.name==='movement/idle/000_idlelevel1');
 const shot=clipsGlb.animations.find(c=>c.name==='shot/idle/020');
 const ready=clipsGlb.animations.find(c=>c.name==='deflect/idle/000_trunk_holdball');
 const keeperClips={Idle:ready,MidCatch:clipsGlb.animations.find(c=>c.name==='deflect/idle/000_trunk_holdball'),LowCatch:clipsGlb.animations.find(c=>c.name==='deflect/idle/000_ground_holdball'),HighCatch:clipsGlb.animations.find(c=>c.name==='deflect/idle/000_high_holdball'),MidParade:clipsGlb.animations.find(c=>c.name==='deflect/idle/090_midheight_deflect_far'),HighParade:clipsGlb.animations.find(c=>c.name==='deflect/idle/090_high_deflect_far')};
-function actor(){const model=clone(clipsGlb.scene),rig=new THREE.Group();rig.add(model);scene.add(rig);const mats=[];model.traverse(o=>{if(!o.isMesh)return;o.frustumCulled=false;o.material=o.material.clone();o.material.roughness=.92;if(['kit','hands'].includes(o.material.name))mats.push(o.material)});const bones=[],boneMap={};model.traverse(o=>{if(o.isBone){bones.push(o);boneMap[o.name]=o}});const mixer=new THREE.AnimationMixer(model);const box=new THREE.Box3().setFromObject(model);return {rig,model,mats,mixer,bones,boneMap,height:1.8,key:'',texture:null,action:null,clip:null,frame:0};}
+function actor(){const model=clone(clipsGlb.scene),rig=new THREE.Group();rig.add(model);scene.add(rig);const mats=[];model.traverse(o=>{if(!o.isMesh)return;o.frustumCulled=false;o.material=o.material.clone();o.material.roughness=.92;if(['kit','hands'].includes(o.material.name))mats.push(o.material)});const bones=[],boneMap={};model.traverse(o=>{if(o.isBone){bones.push(o);boneMap[o.name]=o}});const boneIndices=Object.fromEntries(bones.map((b,i)=>[b.name,i]));const mixer=new THREE.AnimationMixer(model);return {rig,model,mats,mixer,bones,boneMap,boneIndices,height:1.8,key:'',texture:null,action:null,clip:null,frame:0};}
 const shooter=actor(),keeper=actor();
 // Keep the kick contact aligned with Construct's "Kick" signal (frame 42).
 function kickClipTime(frame,duration) {
-  const start=18,contact=42,end=54,hit=Math.min(.50,duration*.9);
+  // The source animation marks ball contact at 0.25 seconds, not at 0.50.
+  const start=0,contact=42,end=54,hit=Math.min(.25,duration*.9);
   if(frame<=start)return 0;
   if(frame<=contact)return (frame-start)/(contact-start)*hit;
   return Math.min(duration,(hit+(frame-contact)/(end-contact)*(duration-hit)));
 }
 function keeperMirror(width){return width<0?-1:1}
-function animate(a,clip,t,dt=0) {
+function mirrorPose(a) {
+  // Reflect the skeleton instead of the mesh: shirt names remain readable.
+  for(let i=0;i<a.bones.length;i++) {
+    const bone=a.bones[i], name=bone.name;
+    const other=name.startsWith('left_')?'right_'+name.slice(5):name.startsWith('right_')?'left_'+name.slice(6):name;
+    const source=a.rawPose[a.boneIndices[other]??i];
+    bone.position.set(-source.p.x,source.p.y,source.p.z);
+    bone.quaternion.set(source.q.x,-source.q.y,-source.q.z,source.q.w);
+  }
+}
+function animate(a,clip,t,dt=0,mirror=false) {
   if(!clip)return;
   if(a.clip!==clip){
     a.transition=a.clip?a.bones.map(b=>({q:b.quaternion.clone(),p:b.position.clone()})):null;
@@ -99,6 +116,7 @@ function animate(a,clip,t,dt=0) {
   for(const b of a.bones)b.quaternion.normalize();
   if(!a.rawPose)a.rawPose=a.bones.map(b=>({q:b.quaternion.clone(),p:b.position.clone()}));
   else a.bones.forEach((b,i)=>{a.rawPose[i].q.copy(b.quaternion);a.rawPose[i].p.copy(b.position)});
+  if(mirror)mirrorPose(a);
   if(a.transition){
     a.blendTime+=dt;
     const u=Math.min(1,a.blendTime/.10),weight=u*u*(3-2*u);
@@ -117,6 +135,38 @@ function idleMotion(a,time,isKeeper){
     if(l)l.rotateY(.015*breath);
     if(r)r.rotateY(-.015*breath);
   }
+}
+// Measure the striking foot in the contact pose using the same model and rig.
+function measureKickFoot(){
+  const a=actor();
+  a.rig.rotation.y=Math.PI;
+  animate(a,shot,.25,0,true);
+  a.rig.updateMatrixWorld(true);
+  const foot=a.boneMap.right_ankle;
+  const point=foot.localToWorld(new THREE.Vector3(0,-.10,0));
+  a.rig.worldToLocal(point);
+  // Return the displacement after the rig's facing rotation, in screen axes.
+  point.applyQuaternion(a.rig.quaternion);
+  scene.remove(a.rig);
+  for(const m of a.mats)m.dispose();
+  return point;
+}
+const kickFoot=measureKickFoot();
+function kickApproach(a,frame,ballInstance,rect){
+  if(frame<=0){a.kickTarget=null;return}
+  if(frame<=42&&ballInstance&&ballInstance.isVisible){
+    const p=ballInstance.layer.layerToCssPx(ballInstance.x+(.5-ballInstance.originX)*ballInstance.width,ballInstance.y+(.5-ballInstance.originY)*ballInstance.height);
+    const edge=ballInstance.layer.layerToCssPx(ballInstance.x+(.5-ballInstance.originX)*ballInstance.width+Math.abs(ballInstance.width)/2,ballInstance.y+(.5-ballInstance.originY)*ballInstance.height);
+    const radius=Math.hypot(edge[0]-p[0],edge[1]-p[1]);
+    a.kickTarget={x:p[0]-rect.left-radius*.65-kickFoot.x*a.rig.scale.x,y:rect.height-(p[1]-rect.top)-radius*.35-kickFoot.y*a.rig.scale.y};
+  }
+  if(!a.kickTarget)return;
+  const u=Math.min(1,Math.max(0,frame/42));
+  const blend=u*u*(3-2*u);
+  // Limit malformed coordinates so a missing/incorrect ball never teleports a player.
+  const dx=a.kickTarget.x-a.rig.position.x,dy=a.kickTarget.y-a.rig.position.y;
+  const max=a.rig.scale.y*1.1,limit=Math.min(1,max/(Math.hypot(dx,dy)||1));
+  a.rig.position.x+=dx*limit*blend;a.rig.position.y+=dy*limit*blend;
 }
 function rgb(i){return 'rgb('+P.rgbArr(i).join(',')+')'}
 function kit(a,data,gk){const key=JSON.stringify([data.kit,data.name,data.number,data.team,gk,data.crest]);if(a.key===key)return;a.key=key;const c=document.createElement('canvas');c.width=c.height=1024;const g=c.getContext('2d'),code=String(data.kit||'03000000');const flam=/flamengo/i.test(data.team),primary=gk?'#167e93':rgb(+code.slice(2,4)),secondary=flam?'#111':rgb(+code.slice(4,6));g.fillStyle='#17191d';g.fillRect(0,0,1024,1024);g.fillStyle=primary;g.fillRect(0,0,1024,407);
@@ -199,15 +249,19 @@ function position(a,i,rect,gk){const sx=Math.abs(i.width/i.imageWidth),sy=Math.a
 function render(now){requestAnimationFrame(render);if(failed)return;let rt,layout;try{rt=window.c3_runtimeInterface?._localRuntime?.GetIRuntime();layout=rt?.layout?.name}catch{}const game=document.querySelector('canvas:not(#ps2shirtDetails):not(#ps2players3d)');if(!rt||!game||layout!=='ballFlight3'||P.ovl){canvas.style.display='none';restore();P.players3dActive=false;last=now;return}try{const s=all(rt,'Shooter')[0],k=all(rt,'goalkeeperNoShirt')[0];if(!s||!k){canvas.style.display='none';restore();P.players3dActive=false;return;}const r=game.getBoundingClientRect();if(!r.width||!r.height){canvas.style.display='none';restore();P.players3dActive=false;return;}if(width!==r.width||height!==r.height){width=r.width;height=r.height;renderer.setSize(width,height,false);camera.right=width;camera.top=height;camera.updateProjectionMatrix()}canvas.style.left=r.left+'px';canvas.style.top=r.top+'px';canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';
 const dt=Math.min((now-last)/1000,.05)*(rt.timeScale||0);last=now;idleTime+=dt;const g=rt.globalVars,arr=rt.objects.arrTeams?.getFirstInstance(),tid=g.whoShoots==='player'?g.myTeamID:g.myOpponentId,kid=g.whoShoots==='player'?g.myOpponentId:g.myTeamID;if(now-editsAt>500){editsCache=g.leagueNum===5?P.load().t:{};editsAt=now}const edits=editsCache;const sd=edits[tid]||{},kd=edits[kid]||{};const sd3=g.leagueNum===5&&P.playerAppearance&&P.playerAppearance.shot===g.shotNumber&&P.playerAppearance.who===g.whoShoots?P.playerAppearance:{name:sd.p?.[0]||'',number:sd.num?.[0]||9,kit:arr?.getAt(tid,2),team:arr?.getAt(tid,0),crest:sd.l||''};if(now-kitAt>120){kitAt=now;kit(shooter,sd3,false);kit(keeper,{kit:arr?.getAt(kid,2),team:arr?.getAt(kid,0),number:1,name:kd.p?.[kd.p.length-1]||''},true);}
 position(shooter,s,r,false);position(keeper,k,r,true);
-const sf=s.animationFrame;
-if(sf<18){animate(shooter,idle,(idleTime*.15)%idle.duration,dt);idleMotion(shooter,idleTime,false)}else{animate(shooter,shot,kickClipTime(sf,shot.duration),dt)}
+const sf=s.animationFrame,b=all(rt,'ball')[0];
+if(sf<=0){animate(shooter,idle,(idleTime*.15)%idle.duration,dt);idleMotion(shooter,idleTime,false)}
+else animate(shooter,shot,kickClipTime(sf,shot.duration),dt,true);
+kickApproach(shooter,sf,b,r);
 const keeperIdle=k.animationName==='Idle'||k.animationName==='Default';
 const kc=keeperIdle?ready:(keeperClips[k.animationName]||idle);
-const frameCount={MidCatch:8,LowCatch:31,HighCatch:10,MidParade:46,HighParade:48}[k.animationName]||153;
-animate(keeper,kc,keeperIdle?0.015:(k.animationFrame/(frameCount-1))*kc.duration,dt);
+const fps={MidCatch:20,LowCatch:20,HighCatch:20,MidParade:15,HighParade:10}[k.animationName]||20;
+const kt=keeperIdle?.015:Math.min(kc.duration-.001,k.animationFrame/fps);
+animate(keeper,kc,kt,dt);
 if(keeperIdle)idleMotion(keeper,idleTime,true);
+else if(rootMotion.has(kc.name))keeper.rig.position.x+=rootMotion.get(kc.name).evaluate(kt)[0]*keeper.rig.scale.x;
 const legacyInstances=new Set();for(const n of visualNames)for(const i of all(rt,n))legacyInstances.add(i);
-const b=all(rt,'ball')[0];ball.visible=!!b?.isVisible;if(b&&ball.visible){const bp=b.layer.layerToCssPx(b.x+(0.5-b.originX)*b.width,b.y+(0.5-b.originY)*b.height),edge=b.layer.layerToCssPx(b.x+(0.5-b.originX)*b.width+Math.abs(b.width)/2,b.y+(0.5-b.originY)*b.height);ball.position.set(bp[0]-r.left,r.height-(bp[1]-r.top),80);ball.scale.setScalar(Math.max(1,Math.hypot(edge[0]-bp[0],edge[1]-bp[1])));ball.rotation.x+=dt*7;legacyInstances.add(b)}
+ball.visible=!!b?.isVisible;if(b&&ball.visible){const bp=b.layer.layerToCssPx(b.x+(0.5-b.originX)*b.width,b.y+(0.5-b.originY)*b.height),edge=b.layer.layerToCssPx(b.x+(0.5-b.originX)*b.width+Math.abs(b.width)/2,b.y+(0.5-b.originY)*b.height);ball.position.set(bp[0]-r.left,r.height-(bp[1]-r.top),80);ball.scale.setScalar(Math.max(1,Math.hypot(edge[0]-bp[0],edge[1]-bp[1])));ball.rotation.x+=dt*7;legacyInstances.add(b)}
 legacyMask.update(legacyInstances);renderer.render(scene,camera);canvas.style.display='block';P.players3dActive=true;
 }catch(e){failed=true;restore();canvas.style.display='none';P.players3dActive=false;console.error('PS2 3D desativado:',e)}}
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();failed=true;restore();canvas.style.display='none';P.players3dActive=false});
