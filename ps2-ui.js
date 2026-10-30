@@ -102,14 +102,21 @@ items.sort(function(a,b){return a.y-b.y||a.x-b.x});var key=JSON.stringify(items.
 el.querySelector('#teamGrid').innerHTML=items.map(function(t){return '<button class="gl lg'+(chosenTeam===t.uid?' on':'')+'" data-team-uid="'+esc(t.uid)+'"><img alt="" src="'+esc(t.logo)+'" style="width:2.8em;height:2.8em;object-fit:contain"><span><b>'+esc(t.name)+'</b></span></button>'}).join('');el.querySelector('#teamContinue').disabled=!chosenTeam;
 }catch(e){console.warn('PS2: não foi possível mostrar a seleção de times',e)}}
 function teamNameKey(name){return String(name||'').trim().normalize('NFC').toLocaleUpperCase('pt-BR')}
+function fallbackTableLogo(name){
+  try{return P.crestURL('03000000',name)}catch(e){return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 48"><path fill="#86bd20" stroke="#fff" stroke-width="2" d="M20 2 37 8v17c0 11-9 18-17 21C12 43 3 36 3 25V8z"/></svg>')}
+}
 function tableLogos(rt,names){
-  var arr=rt.objects.arrTeams.getFirstInstance(),br=rt.globalVars.leagueNum===P.league,edits=br?(P.load().t||{}):{},wanted={},found={};
+  var arr=null,br=rt.globalVars.leagueNum===P.league,edits={},wanted={},found={};
+  try{arr=rt.objects.arrTeams.getFirstInstance()}catch(e){}
+  try{edits=br?(P.load().t||{}):{}}catch(e){}
   names.forEach(function(n){if(n)wanted[teamNameKey(n)]=true});
-  for(var i=0;i<arr.width;i++){
-    var d=edits[i]||{},original=String(arr.getAt(i,0)||''),name=String(d.n||original),kit=arr.getAt(i,2);
-    [original,name].forEach(function(n){var k=teamNameKey(n);if(!wanted[k])return;var logo=d.l||P.crestURL(kit,name);if(!found[k])found[k]={id:i,logo:logo};else if(found[k].id!==i)found[k].ambiguous=true});
+  if(arr&&Number.isFinite(+arr.width))for(var i=0;i<arr.width;i++){
+    try{
+      var d=edits[i]||{},original=String(arr.getAt(i,0)||''),name=String(d.n||original),kit=arr.getAt(i,2);
+      [original,name].forEach(function(n){var k=teamNameKey(n);if(!wanted[k])return;var logo=d.l||P.crestURL(kit,name);if(!found[k])found[k]={id:i,logo:logo};else if(found[k].id!==i)found[k].ambiguous=true});
+    }catch(e){}
   }
-  var result={};names.forEach(function(n){if(!n)return;var k=teamNameKey(n),match=found[k];result[k]=match&&!match.ambiguous?match.logo:P.crestURL('03000000',n)});return result;
+  var result={};names.forEach(function(n){if(!n)return;var k=teamNameKey(n),match=found[k];result[k]=match&&!match.ambiguous?match.logo:fallbackTableLogo(n)});return result;
 }
 function drawTable(rt){
   var el=els['ps2-table'],fields={},list=[];
@@ -118,10 +125,11 @@ function drawTable(rt){
     for(var i=0;i<4;i++){var name=(fields.tableTeam||{})[i];if(name)list.push([name,(fields.tablePoints||{})[i],(fields.tableWins||{})[i],(fields.tableLoses||{})[i],(fields.tableGD||{})[i]])}
     var pairs=fields.allPairs||{},results=fields.result||{},names=list.map(function(row){return row[0]}).concat(Object.keys(pairs).map(function(k){return pairs[k]}));
     var logos=tableLogos(rt,names),key=JSON.stringify([list,pairs,results,logos]);if(key===tableSignature)return;tableSignature=key;
-    function crest(name){return '<img src="'+esc(logos[teamNameKey(name)])+'" alt="">'}
+    function crest(name){return '<img src="'+esc(logos[teamNameKey(name)])+'" data-fallback="'+esc(fallbackTableLogo(name))+'" alt="">'}
     el.querySelector('#groupRows').innerHTML=list.length?list.map(function(row,i){return '<tr><td>'+(i+1)+'º</td><td><div class="table-team">'+crest(row[0])+'<span>'+esc(row[0])+'</span></div></td>'+row.slice(1).map(function(v){return '<td>'+esc(v==null||v===''?'—':v)+'</td>'}).join('')+'</tr>'}).join(''):'<tr><td colspan="6">Carregando classificação...</td></tr>';
     var games=[];for(var j=0;j<2;j++){var home=pairs[j*2],away=pairs[j*2+1];if(home&&away)games.push('<div class="gl fixture"><div class="fixture-team">'+crest(home)+'<span>'+esc(home)+'</span></div><b>'+esc(results[j]||'x')+'</b><div class="fixture-team fixture-away"><span>'+esc(away)+'</span>'+crest(away)+'</div></div>')}
     el.querySelector('#groupFixtures').innerHTML=games.join('')||'<p>Aguardando jogos da rodada.</p>';
+    el.querySelectorAll('.table-team img,.fixture-team img').forEach(function(img){img.onerror=function(){if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}}});
   }catch(e){console.warn('PS2: não foi possível carregar a tabela',e)}
 }
 function drawKnockout(rt){var el=els['ps2-knockout'];try{var arr=rt.objects.arrKnockoutFull.getFirstInstance(),g=rt.globalVars,round=Number(g.COMPETITION_ROUND),groupEnd=Number(g.GROUP_PHASE_FINAL_ROUND);if(!Number.isFinite(groupEnd)||groupEnd<1)groupEnd=3;var stage=Math.max(0,Math.min(5,round-groupEnd+1)),bound=[0,16,24,28,30,31],known=bound[stage]||0,ids=[];for(var i=0;i<known;i++)ids.push(arr.getAt(i,0));var key=JSON.stringify([round,groupEnd,g.myTeamID,g.leagueNum,ids]);if(key===knockoutSignature)return;knockoutSignature=key;var headers=['Oitavas de final','Quartas de final','Semifinais','Final','Campeão'],starts=[0,16,24,28,30],counts=[16,8,4,2,1],html='';for(var c=0;c<5;c++){html+='<section class="ko-column"><h3>'+headers[c]+'</h3><div class="ko-matches">';var pairCount=Math.ceil(counts[c]/2),span=8/pairCount;for(var j=0;j<pairCount;j++){var first=starts[c]+j*2,lines='';for(var k=0;k<Math.min(2,counts[c]-j*2);k++){var ix=first+k,id=ids[ix],valid=ix<known&&Number.isInteger(+id)&&+id>=0;if(valid){var t=team(rt,+id,g.leagueNum===P.league);lines+='<div class="ko-team'+(+id===+g.myTeamID?' selected':'')+'"><img alt="" src="'+esc(t.logo)+'"><span>'+esc(t.n)+'</span></div>'}else lines+='<div class="ko-team empty"><span>A definir</span></div>'}html+='<div class="gl ko-card" style="grid-row:'+(j*span+1)+' / span '+span+'">'+lines+'</div>'}html+='</div></section>'}el.querySelector('#knockoutBracket').innerHTML=html}catch(e){console.warn('PS2: não foi possível carregar o mata-mata',e)}}
