@@ -118,6 +118,7 @@ if(rt&&curLay()==='matchIntroV2'&&typeof rt.goToLayout==='function'){
   rt.goToLayout('ballFlight3');
   return;
 }
+if(curLay()==='matchIntro'){tap(480,430);return}
 tap(840,482);
 }
 P.tap=tap;P.openPick=openPick;P.layout=curLay;P.rt=ir;
