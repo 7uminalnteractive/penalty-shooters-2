@@ -29,7 +29,7 @@ var CSS='.ps2ui{position:fixed;inset:0;z-index:30;display:none;color:#f4f7f5;fon
 +'#ps2sb .nm{display:flex;align-items:center;justify-content:center;background:#090266;font-size:1.2em;letter-spacing:.015em;white-space:nowrap;overflow:hidden;text-overflow:clip;padding:0 .25em}#ps2sb .nm.sm{font-size:1em}#ps2sb .nm.xs{font-size:.8em}#ps2sb .nl{grid-column:2;grid-row:1}#ps2sb .nr{grid-column:4;grid-row:1}#ps2sb .nm.on{box-shadow:inset 0 -.09em 0 #b8f900}'
 +'#ps2sb .sc{grid-column:3;grid-row:2;position:relative;display:flex;align-items:center;justify-content:center;background:#a9f500;color:#08005d;font-family:Arial,sans-serif;font-size:2em;line-height:1;letter-spacing:-.04em;text-transform:none}#ps2sb .tr{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:2.1em;height:1.15em;fill:#e6f344;filter:drop-shadow(0 0 .09em rgba(255,255,255,.75))}'
 +'#ps2sb .dt{display:flex;align-items:center;justify-content:center;gap:.15em;background:#fff;overflow:hidden;padding:0 .18em}#ps2sb .dl{grid-column:2;grid-row:2}#ps2sb .dr{grid-column:4;grid-row:2}#ps2sb .d{width:1.9em;height:1.9em;flex:0 1 1.9em;min-width:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#080808;font-family:Arial,sans-serif;font-style:normal;font-size:.88em;line-height:1;color:#fff;font-weight:900}#ps2sb .d.g{background:#00d4b5;color:#001b20}#ps2sb .d.m{background:#ed1749}#ps2sb .d.c{box-shadow:0 0 0 .12em #a9f500}';
-var editorOpen=false,leagueOpen=false,awaitingStart=false,leagueChosen=false,startAttempts=0,startAttemptAt=0,helpOpen=false,divisionCountry=null,chosenTeam='',teamsSignature='',teamScrollingUntil=0,lastTeamScan=0,teamSelectToken=0,tableSignature='',knockoutSignature='',gameOverSignature='',pauseOpen=false,pauseScale=1,pauseConfirm=false,kitOpen=false,kitState=null,kitApplied=null,els={},cur='',sbOn=false,whoAt=[],lastSn=0,oldHide=false,css=document.createElement('style');
+var hiddenLegacy=new Map(),editorOpen=false,leagueOpen=false,awaitingStart=false,leagueChosen=false,startAttempts=0,startAttemptAt=0,helpOpen=false,divisionCountry=null,chosenTeam='',teamsSignature='',teamScrollingUntil=0,lastTeamScan=0,teamSelectToken=0,tableSignature='',knockoutSignature='',gameOverSignature='',pauseOpen=false,pauseScale=1,pauseConfirm=false,kitOpen=false,kitState=null,kitApplied=null,els={},cur='',sbOn=false,whoAt=[],lastSn=0,oldHide=false,css=document.createElement('style');
 css.textContent=CSS+'#ps2-editor{padding:0;overflow:hidden;z-index:80;background:#0e1f17}#ps2-editor iframe{display:block;border:0;width:100%;height:100%;background:#0e1f17}';
 function mk(id,cls,html){var d=document.createElement('div');d.id=id;d.className=cls;d.innerHTML=html;document.body.appendChild(d);els[id]=d;return d}
 function tap(x,y){return function(){P.tap(x,y)}}
@@ -96,9 +96,11 @@ setInterval(tick,100);
   if(oldHide)hideOld();requestAnimationFrame(raf)
 })();
 }
-function hideOld(){var rt=P.rt();if(!rt)return;var o=rt.objects;try{o.mainMenuIcon.getAllInstances().forEach(function(x){x.isVisible=false})}catch(e){}['result_base','shotStatus'].forEach(function(k){try{o[k].getAllInstances().forEach(function(x){x.isVisible=false;x.opacity=0})}catch(e){}});
-try{o.midText.getAllInstances().forEach(function(x){if(x.x>=590&&x.y>=350&&x.y<=445){x.isVisible=false;x.opacity=0}})}catch(e){}
-try{o.bigTextShotAnnouncement.getAllInstances().forEach(function(x){if(/TURN/i.test(String(x.text))){x.isVisible=false;x.opacity=0}})}catch(e){}}
+function hideLegacy(x,hideOpacity){try{if(!hiddenLegacy.has(x))hiddenLegacy.set(x,{visible:x.isVisible,opacity:x.opacity});x.isVisible=false;if(hideOpacity)x.opacity=0}catch(e){}}
+function restoreLegacy(){hiddenLegacy.forEach(function(v,x){try{if(x.isVisible===false)x.isVisible=v.visible;if(x.opacity===0)x.opacity=v.opacity}catch(e){}});hiddenLegacy.clear()}
+function hideOld(){var rt=P.rt();if(!rt||rt.layout.name!=='ballFlight3')return;var o=rt.objects;try{o.mainMenuIcon.getAllInstances().forEach(function(x){hideLegacy(x,false)})}catch(e){}['result_base','shotStatus'].forEach(function(k){try{o[k].getAllInstances().forEach(function(x){hideLegacy(x,true)})}catch(e){}});
+try{o.midText.getAllInstances().forEach(function(x){if(x.x>=590&&x.y>=350&&x.y<=445)hideLegacy(x,true)})}catch(e){}
+try{o.bigTextShotAnnouncement.getAllInstances().forEach(function(x){if(/TURN/i.test(String(x.text)))hideLegacy(x,true)})}catch(e){}}
 
 /* Usa a posição do controle original para selecionar qualquer clube da lista. */
 function selectTeam(uid){var token=++teamSelectToken,el=els['ps2-teams'],status=el.querySelector('#teamStatus');chosenTeam='';lastTeamScan=0;el.querySelector('#teamContinue').disabled=true;status.textContent='Selecionando time...';
@@ -175,7 +177,7 @@ if(lay==='matchIntroV2'&&g.myTeamID>=0){var A=team(rt,g.myTeamID,br),B=team(rt,g
 if(cur!==id){cur=id;show(id)}
 /* placar */
 var cv=document.querySelector('canvas:not(#ps2shirtDetails):not(#ps2players3d)');if(!cv)return;
-if(lay!=='ballFlight3'||g.myTeamID<0){els.ps2pauseBtn.style.display='none';if(pauseOpen){rt.timeScale=pauseScale;pauseOpen=false}els.ps2sb.style.display='none';oldHide=false;whoAt=[];lastSn=0;return}
+if(lay!=='ballFlight3'||g.myTeamID<0){els.ps2pauseBtn.style.display='none';if(pauseOpen){rt.timeScale=pauseScale;pauseOpen=false}els.ps2sb.style.display='none';oldHide=false;restoreLegacy();whoAt=[];lastSn=0;return}
 oldHide=true;
 var r=cv.getBoundingClientRect(),pb=els.ps2pauseBtn;pb.style.display=pauseOpen?'none':'flex';var ps=Math.max(30,Math.min(46,r.height*.085,r.width*.075));pb.style.width=pb.style.height=ps+'px';pb.style.left=(r.left+Math.max(8,r.width*.018))+'px';pb.style.top=(r.top+Math.max(8,r.height*.055))+'px';var sn=g.shotNumber,who=g.whoShoots;if(sn<lastSn)whoAt=[];lastSn=sn;if(sn>0)whoAt[sn]=who;
 var me=team(rt,g.myTeamID,br),op=team(rt,g.myOpponentId,br),homeMe=g.wePlayHome==='yes',L=homeMe?{w:'player',t:me,s:g.tempResultPlayer}:{w:'cpu',t:op,s:g.tempResultCPU},R=homeMe?{w:'cpu',t:op,s:g.tempResultCPU}:{w:'player',t:me,s:g.tempResultPlayer};
