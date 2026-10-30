@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Editor de times — Penalty Shooters 2</title>
 <style>
 :root{--bg:#0e1f17;--card:#16301f;--line:#2b5a38;--fg:#f2f7f3;--mut:#9cb8a4;--acc:#ffd23f;--bad:#ff6b6b;box-sizing:border-box}
@@ -21,6 +21,8 @@ label{display:block;color:var(--mut);font-size:14px;margin:12px 0 4px}.logo{disp
 .hint{color:var(--mut);font-size:13px}.tk{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.tk label{margin:0}.tk select{width:100%;font:inherit;color:var(--fg);background:#0a1812;border:1px solid var(--line);border-radius:10px;padding:9px}@media (max-height:520px){h1{font-size:16px;margin-bottom:6px}.hint.top{display:none}header{padding-top:6px;padding-bottom:6px}.box{margin:8px auto}textarea{min-height:150px}}#msg{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--acc);color:#111;font-weight:700;padding:10px 16px;border-radius:999px;display:none;z-index:20}
 .kit-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.kit-edit{padding:12px;border:1px solid rgba(255,255,255,.14);border-radius:12px;min-width:0}.kit-edit canvas{display:block;width:68px;height:72px;margin:10px auto;image-rendering:pixelated}.kit-edit select{width:100%}@media(max-width:520px){.kit-editor{grid-template-columns:1fr}}
 .player-numbers{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin:8px 0 14px}.player-number{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid rgba(255,255,255,.13);border-radius:10px;background:rgba(255,255,255,.04)}.player-number span{flex:1;min-width:0;overflow-wrap:anywhere}.player-number input{width:65px;flex:none;text-align:center;margin:0}
+@media(max-width:700px){header{padding:12px max(12px,env(safe-area-inset-right)) 12px max(12px,env(safe-area-inset-left))}header .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}header .row button,header .row .btn{min-height:44px;text-align:center;padding:9px 7px}main{padding:10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))}#list{grid-template-columns:1fr}.box{width:100%;min-height:100%;margin:0;border:0;border-radius:0;padding:16px max(14px,env(safe-area-inset-right)) 24px max(14px,env(safe-area-inset-left))}input,select,textarea{font-size:16px!important}.mod{overscroll-behavior:contain}}
+:fullscreen body,:-webkit-full-screen body{min-height:100vh}
 </style></head><body>
 <header><h1>Editor de times · Brasil</h1>
 <div class="row"><a class="btn" href="index.html">▶ Jogar</a><button class="sec" id="fs">⛶ Tela cheia</button><button class="sec" id="exp">Exportar pacote</button><button class="sec" id="expjson">Exportar JSON</button><button class="sec" id="imp">Importar</button><button class="dng" id="rst">Restaurar tudo</button><input type="file" id="file" accept=".json,.zip,application/json,application/zip,application/x-zip-compressed" hidden></div>
@@ -105,7 +107,9 @@ $('exp').onclick=exportPackage;
 $('imp').onclick=function(){$('file').click()};
 $('file').onchange=async function(){var f=this.files[0];this.value='';if(!f)return;var button=$('imp');button.disabled=true;button.textContent='Importando...';try{var candidate=await importFile(f);P.save(candidate);data=candidate;render();msg('Times importados!')}catch(e){console.error(e);msg(e&&e.name==='QuotaExceededError'?'Sem espaço no navegador para importar os escudos.':(e.message||'Não foi possível importar o arquivo.'),7000)}finally{button.disabled=false;button.textContent='Importar'}};
 var fsb=$('fs'),de=document.documentElement;if(!(document.fullscreenEnabled||document.webkitFullscreenEnabled))fsb.style.display='none';
-fsb.onclick=function(){var on=document.fullscreenElement||document.webkitFullscreenElement;if(on){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}else{var rq=de.requestFullscreen||de.webkitRequestFullscreen;if(rq)rq.call(de)}};
+function syncFullscreen(){var on=document.fullscreenElement||document.webkitFullscreenElement;fsb.textContent=on?'⛶ Sair da tela cheia':'⛶ Tela cheia';fsb.setAttribute('aria-pressed',on?'true':'false')}
+fsb.onclick=function(){var on=document.fullscreenElement||document.webkitFullscreenElement;try{var fn=on?(document.exitFullscreen||document.webkitExitFullscreen):(de.requestFullscreen||de.webkitRequestFullscreen),result=fn&&fn.call(on?document:de);if(result&&result.catch)result.catch(function(){msg('Não foi possível ativar a tela cheia.')})}catch(e){msg('Não foi possível ativar a tela cheia.')}};
+document.addEventListener('fullscreenchange',syncFullscreen);document.addEventListener('webkitfullscreenchange',syncFullscreen);syncFullscreen();
 data=P.load();if(!data.t)data={t:{}};
 Promise.all([P.loadColors(),fetch('teams_br2.json').then(function(r){return r.json()})]).then(function(a){teams=a[1].data;render()}).catch(function(){$('list').innerHTML='<p class="hint">Não consegui carregar a lista de times.</p>'});
 })();
